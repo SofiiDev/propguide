@@ -277,6 +277,7 @@
   .btn-wa:active{background:var(--wa-dark)}
   .btn-sec{flex:1;background:var(--surface);border:1.5px solid var(--ink)}
   .btn svg{width:20px;height:20px}
+  .btn[hidden]{display:none}
   .btn[disabled]{background:#cfc9bf;color:#fff;border-color:#cfc9bf}
 
   /* ---------- Bottom sheet & modales ---------- */
@@ -341,6 +342,10 @@
   .news-link svg{width:18px;height:18px}
   .share-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-bottom:6px}
   .sh.busy{opacity:.55;pointer-events:none}
+  .story-box{display:flex;gap:14px;align-items:flex-start;margin:4px 0 14px}
+  .story-box img{width:96px;aspect-ratio:9/16;object-fit:cover;border-radius:10px;flex:none;background:var(--line)}
+  .story-box ol{padding-left:18px;font-size:14px;line-height:1.45;color:var(--ink)}
+  .story-box li+li{margin-top:6px}
   .sh{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:84px;padding:8px 2px;border-radius:14px;font-size:13px;font-weight:500;text-decoration:none;color:var(--ink)}
   .sh:active{background:var(--bg)}
   .sh i{width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
@@ -517,6 +522,21 @@
 </div>
 
 <!-- Bottom sheet: compartir -->
+<div class="sheet" id="story-sheet" role="dialog" aria-modal="true" aria-labelledby="story-title">
+  <div class="grab"></div>
+  <h3 id="story-title">Subila a tu historia</h3>
+  <div class="story-box">
+    <img id="story-prev" alt="Vista previa de la historia">
+    <ol>
+      <li>Tocá <b>Guardar y abrir Instagram</b>.</li>
+      <li>En la cámara de historias, elegí la imagen de tu galería (es la última).</li>
+      <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>
+    </ol>
+  </div>
+  <button class="btn btn-pri" id="story-save" type="button" style="width:100%">Guardar y abrir Instagram</button>
+  <button class="btn btn-sec" id="story-share" type="button" style="width:100%;margin-top:8px" hidden>Compartir con otras apps</button>
+</div>
+
 <div class="sheet" id="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">
   <div class="grab"></div>
   <h3 id="share-title">Compartir propiedad</h3>
@@ -1242,7 +1262,7 @@ function videoHTML(url){
 
 /* Bottom sheet */
 function openSheet(){ franja=""; document.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed','false')); $('#sheet-go').href = waLink(actual,'visita'); $('#scrim').classList.add('open'); $('#sheet').classList.add('open'); }
-function closeSheet(){ $('#scrim').classList.remove('open'); ['#sheet','#share-sheet','#busca-sheet','#filtros-sheet','#news-sheet'].forEach(s=>$(s).classList.remove('open')); }
+function closeSheet(){ $('#scrim').classList.remove('open'); ['#sheet','#share-sheet','#story-sheet','#busca-sheet','#filtros-sheet','#news-sheet'].forEach(s=>$(s).classList.remove('open')); }
 
 /* =========================================================
    "TE AYUDO A ENCONTRAR TU PROPIEDAD"
@@ -1444,18 +1464,28 @@ $('#sh-story').onclick = async ()=>{
     const blob = await shareData.story;
     if (!blob) { toast("No pude armar la imagen. Probá de nuevo."); return; }
     const file = new File([blob], `propiedad-${(shareData.title||"").slice(0,30).replace(/\W+/g,"-")}.jpg`, { type: 'image/jpeg' });
-    const copiado = copiarYa(shareData.url);
-    if (navigator.canShare?.({ files: [file] })) {
-      try { await navigator.share({ files: [file] }); } catch (e) { if (e.name === "AbortError") return; throw e; }
-      toast(copiado ? "En Instagram agregá el sticker «Enlace» y pegá el link (ya está copiado)" : "Agregá el sticker «Enlace» con el link de la propiedad");
-    } else {
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-      toast("Imagen descargada: subila como historia y agregá el sticker «Enlace» con el link copiado");
-    }
-    closeSheet();
-  } catch { toast("No se pudo compartir. Probá de nuevo."); }
+    if (shareData.storyUrl) URL.revokeObjectURL(shareData.storyUrl);
+    shareData.storyFile = file; shareData.storyUrl = URL.createObjectURL(blob);
+    $('#story-prev').src = shareData.storyUrl;
+    $('#story-share').hidden = !navigator.canShare?.({ files: [file] });
+    $('#share-sheet').classList.remove('open'); $('#story-sheet').classList.add('open');
+  } catch { toast("No pude armar la imagen. Probá de nuevo."); }
   finally { btn.classList.remove('busy'); }
+};
+// Funciona en cualquier celular: guarda la imagen en la galería y abre la cámara de historias de Instagram
+$('#story-save').onclick = ()=>{
+  const copiado = copiarYa(shareData.url);
+  const a = document.createElement('a'); a.href = shareData.storyUrl; a.download = shareData.storyFile.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  const celu = matchMedia('(pointer:coarse)').matches;
+  toast(celu ? "Imagen guardada. Abriendo Instagram…" : `Imagen descargada${copiado ? " y link copiado" : ""}: subila como historia desde el celular`);
+  closeSheet();
+  if (celu) setTimeout(()=>{ location.href = "instagram://story-camera"; }, 900);
+};
+$('#story-share').onclick = async ()=>{
+  copiarYa(shareData.url);
+  try { await navigator.share({ files: [shareData.storyFile] }); closeSheet(); toast("Agregá el sticker «Enlace» y pegá el link (ya está copiado)"); }
+  catch (e) { if (e.name !== "AbortError") toast("No se pudo compartir. Usá «Guardar y abrir Instagram»."); }
 };
 async function copyLink(msg){
   try { await navigator.clipboard.writeText(shareData.url); toast(msg); }
