@@ -208,6 +208,9 @@
   .iconbtn svg{width:22px;height:22px}
   .gallery{position:relative;aspect-ratio:4/3.3;background:linear-gradient(135deg,#ddd5c8,#c9bfae)}
   .gallery .slides img{cursor:zoom-in}
+  .play-row{position:absolute;left:16px;bottom:14px;display:flex;gap:8px;z-index:2}
+  .play-row .play-cta{position:static}
+  .t360-frame{width:100%;height:85vh;height:85dvh;border:0;background:#000}
   .play-cta{position:absolute;left:16px;bottom:14px;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 8px;border-radius:999px;background:#fff;font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
   .play-cta i{width:30px;height:30px;border-radius:50%;background:var(--brand);display:grid;place-items:center}
   .play-cta i svg{width:12px;height:12px;fill:#fff;margin-left:2px}
@@ -611,6 +614,7 @@ const ICON = {
   age:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   wa:$('#sheet-go svg').outerHTML,
 };
+ICON.t360 = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="12" rx="9" ry="4"/><path d="M12 3a9 9 0 0 1 0 18M12 3a9 9 0 0 0 0 18"/></svg>';
 ICON.cam = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
 ICON.dir = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v18M5 8h11l3 3-3 3H5z"/></svg>';
 ICON.fin = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/></svg>';
@@ -936,7 +940,7 @@ function card(p){
       ${p.estado==="nueva" ? RIBBON : ""}
       <div class="badges ${p.estado==="nueva"?"has-ribbon":""}">${badges(p)}</div>
       ${favBtn(p, "fav")}
-      ${p.video?`<span class="tour">▶ Tour</span>`:""}
+      ${p.video||p.tour360?`<span class="tour">${p.video?"▶ Tour":""}${p.video&&p.tour360?" · ":""}${p.tour360?"360°":""}</span>`:""}
       <span class="photos-n">${ICON.cam}${p.fotos.length}</span>
       ${fotos.length>1?`<span class="counter">1/${fotos.length}</span>`:""}
     </div>
@@ -1038,7 +1042,10 @@ function renderDetail(p){
       <div class="slides">${p.fotos.map((f,i)=>`<img src="${f}" alt="${p.titulo} – foto ${i+1}" loading="${i?'lazy':'eager'}" data-zoom="${f}" onerror="this.classList.add('err')">`).join("")}</div>
       <div class="badges" style="top:68px;right:16px">${badges(p, true)}</div>
       <span class="counter">1/${p.fotos.length}</span>
-      ${p.video?`<button class="play-cta" id="play"><i>${ICON.play}</i>Ver tour en video</button>`:""}
+      <div class="play-row">
+        ${p.video?`<button class="play-cta" id="play"><i>${ICON.play}</i>Video</button>`:""}
+        ${p.tour360?`<button class="play-cta" id="t360"><i>${ICON.t360}</i>Tour 360°</button>`:""}
+      </div>
     </div>
 
     <header class="d-head">
@@ -1055,6 +1062,7 @@ function renderDetail(p){
         ${p.aptoCredito&&!vendida?`<span>Apto crédito</span>`:""}
         ${p.antiguedad===0&&!pozo?`<span>A estrenar</span>`:""}
         ${p.video?`<span>Tour en video</span>`:""}
+        ${p.tour360?`<span>Tour 360°</span>`:""}
       </div>
       <h2>${p.titulo}</h2>
       <div class="loc">${ICON.pin}<p>${p.direccion || p.barrio}<small>${p.barrio}, ${p.ciudad}</small></p></div>
@@ -1154,10 +1162,16 @@ function renderDetail(p){
   $('#back').onclick = ()=> fromList ? history.back() : (location.hash = "");
   $('#share').onclick = ()=> openShare(p);
   $('#play')?.addEventListener('click', ()=>openModal(videoHTML(p.video)));
+  $('#t360')?.addEventListener('click', ()=>openModal(tour360HTML(p.tour360)));
   $('#detail .slides').addEventListener('click', e=>{ const z=e.target.dataset?.zoom; if(z) openModal(`<img src="${z}" alt="">`); });
   $('#visita')?.addEventListener('click', openSheet);
 }
 
+/* Tour 360° (Matterport, Ricoh, etc.) en pantalla completa */
+function tour360HTML(url){
+  const u = /matterport\.com/.test(url) && !/[?&]play=/.test(url) ? url + (url.includes("?") ? "&" : "?") + "play=1" : url;
+  return `<iframe src="${u}" class="t360-frame" allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer" allowfullscreen title="Tour 360°"></iframe>`;
+}
 /* YouTube / Vimeo / mp4 */
 function videoHTML(url){
   const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);

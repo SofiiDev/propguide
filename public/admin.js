@@ -255,7 +255,7 @@ form.onsubmit = async e=>{
     cochera: form.cochera.checked, aptoCredito: form.aptoCredito.checked, publicada: form.publicada.checked,
     publicado: editando.publicado || new Date().toISOString().slice(0,10),
     amenities: d.amenities.split(",").map(s=>s.trim()).filter(Boolean),
-    video: d.video.trim() || null, fotos };
+    video: d.video.trim() || null, tour360: (d.tour360 || "").trim() || null, fotos };
   if (p.tipo === "Desarrollo en pozo"){
     p.ambMax = num("ambMax") || p.ambientes;
     p.pozo = {

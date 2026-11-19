@@ -281,7 +281,7 @@
       <legend>Datos principales</legend>
       <div class="grid">
         <div class="full"><label for="f-titulo">Título</label><input type="text" id="f-titulo" name="titulo" required placeholder="Luminoso 3 ambientes con balcón"></div>
-        <div><label for="f-tipo">Tipo</label><select id="f-tipo" name="tipo"><option>Departamento</option><option>Casa</option><option>PH</option><option>Desarrollo en pozo</option><option>Terreno</option><option>Local</option></select></div>
+        <div><label for="f-tipo">Tipo</label><select id="f-tipo" name="tipo"><option>Departamento</option><option>Casa</option><option>PH</option><option>Desarrollo en pozo</option><option>Oficina</option><option>Terreno</option><option>Local</option></select></div>
         <div><label for="f-codigo">Código</label><input type="text" id="f-codigo" name="codigo" readonly></div>
         <div><label for="f-moneda">Moneda</label><select id="f-moneda" name="moneda"><option>USD</option><option>ARS</option></select></div>
         <div><label for="f-precio" id="lbl-precio">Precio</label><input type="number" inputmode="numeric" id="f-precio" name="precio" min="0" required></div>
@@ -334,6 +334,7 @@
       <div class="grid">
         <div class="full"><label for="f-desc">Descripción</label><textarea id="f-desc" name="descripcion"></textarea></div>
         <div class="full"><label for="f-video">Link del tour en video</label><input type="url" id="f-video" name="video" placeholder="https://..."><p class="hint">YouTube (no listado), Vimeo o un archivo .mp4.</p></div>
+        <div class="full"><label for="f-t360">Link del tour 360°</label><input type="url" id="f-t360" name="tour360" placeholder="https://my.matterport.com/show/?m=..."><p class="hint">Matterport, Ricoh 360 u otro recorrido virtual.</p></div>
       </div>
     </fieldset>
 
@@ -376,13 +377,19 @@
         <label class="btn btn-pri" for="imp-dir" style="display:flex;align-items:center;justify-content:center;margin-top:12px;cursor:pointer">Elegir carpeta</label>
         <input type="file" id="imp-dir" webkitdirectory directory multiple hidden>
         <p class="hint" id="imp-cargando" hidden style="margin-top:10px">Leyendo archivos…</p>
-        <p class="hint" style="margin-top:10px">Funciona desde una computadora con Chrome, Edge o Firefox. Videos de hasta 50 MB.</p>
+        <p class="hint" style="margin-top:10px">Funciona desde una computadora con Chrome, Edge o Firefox. También entiende la exportación de teamnexia (descripcion.txt, info.txt, fotos/ y video/).</p>
       </fieldset>
     </section>
 
     <section id="imp-paso2" hidden>
       <p class="imp-res" id="imp-resumen"></p>
       <label class="check" style="margin:4px 0 12px"><input type="checkbox" id="imp-publicar"> Publicar directamente en la galería</label>
+      <label for="imp-maxfotos" style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:4px">Fotos por propiedad</label>
+      <select id="imp-maxfotos" style="width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;background:#fff;margin-bottom:12px">
+        <option value="15">Las primeras 15</option>
+        <option value="25" selected>Las primeras 25 (recomendado)</option>
+        <option value="0">Todas</option>
+      </select>
       <p class="hint" style="margin:-6px 0 12px">Si no lo marcás, se importan <b>ocultas</b> para que las revises y las publiques con el ojo.</p>
       <div id="imp-list"></div>
       <button class="btn btn-ghost" type="button" id="imp-otra" style="width:100%;margin-top:8px">Elegir otra carpeta</button>
