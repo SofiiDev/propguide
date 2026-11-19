@@ -124,7 +124,9 @@
   .badge.new{background:var(--new);color:#fff}
   .badge.reserved{background:var(--reserved);color:#fff}
   .badge.sold{background:var(--sold);color:#fff}
-  .tour{position:absolute;bottom:10px;left:62px;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(20,20,20,.62);color:#fff;backdrop-filter:blur(4px)}
+  .tour{position:absolute;bottom:10px;left:62px;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(20,20,20,.62);color:#fff;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  /* iPhone: con letra menor a 16px Safari hace zoom al tocar el campo */
+  @supports (-webkit-touch-callout:none){ .sort select{font-size:16px} }
   .counter{position:absolute;bottom:10px;right:12px;padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(20,20,20,.55);color:#fff}
   .photos-n{position:absolute;bottom:10px;left:12px;display:flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(20,20,20,.6);color:#fff;z-index:2}
   .photos-n svg{width:13px;height:13px}
@@ -527,7 +529,7 @@
   <h3 id="story-title">Subila a tu historia</h3>
   <div class="story-box">
     <img id="story-prev" alt="Vista previa de la historia">
-    <ol>
+    <ol id="story-pasos">
       <li>Tocá <b>Guardar y abrir Instagram</b>.</li>
       <li>En la cámara de historias, elegí la imagen de tu galería (es la última).</li>
       <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>
@@ -535,6 +537,7 @@
   </div>
   <button class="btn btn-pri" id="story-save" type="button" style="width:100%">Guardar y abrir Instagram</button>
   <button class="btn btn-sec" id="story-share" type="button" style="width:100%;margin-top:8px" hidden>Compartir con otras apps</button>
+  <a class="btn btn-sec" id="story-open" href="instagram://story-camera" style="width:100%;margin-top:8px" hidden>2 · Abrir Instagram</a>
 </div>
 
 <div class="sheet" id="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">
@@ -1426,8 +1429,14 @@ async function historiaPNG(p){
     const img = await cargarImg(p.fotos[0]);
     const k = Math.max(W / img.width, FH / img.height), w = img.width * k, h = img.height * k;
     x.save(); x.beginPath(); x.rect(0, 0, W, FH); x.clip();
-    if (p.estado === "reservada" || p.estado === "vendida") x.filter = "grayscale(1) brightness(.9)";
+    const gris = p.estado === "reservada" || p.estado === "vendida";
+    if (gris && "filter" in x) x.filter = "grayscale(1) brightness(.9)";
     x.drawImage(img, (W - w) / 2, (FH - h) / 2, w, h); x.restore();
+    if (gris && !("filter" in x)) {
+      const d = x.getImageData(0, 0, W, FH), px = d.data;
+      for (let i = 0; i < px.length; i += 4) { const v = (px[i]*.3 + px[i+1]*.59 + px[i+2]*.11) * .9; px[i] = px[i+1] = px[i+2] = v; }
+      x.putImageData(d, 0, 0);
+    }
   } catch { x.fillStyle = '#c9bfae'; x.fillRect(0, 0, W, FH); }
   const g = x.createLinearGradient(0, FH - 260, 0, FH); g.addColorStop(0, 'rgba(19,93,78,0)'); g.addColorStop(1, verde);
   x.fillStyle = g; x.fillRect(0, FH - 260, W, 260);
@@ -1435,7 +1444,7 @@ async function historiaPNG(p){
   const etiqueta = p.estado === "reservada" ? "RESERVADA" : p.estado === "vendida" ? "VENDIDA" : p.estado === "nueva" ? "NUEVO INGRESO" : "";
   if (etiqueta){
     x.font = `700 40px ${F}`; const tw = x.measureText(etiqueta).width + 64;
-    x.fillStyle = p.estado === "nueva" ? '#f5c400' : 'rgba(30,30,30,.8)'; x.beginPath(); x.roundRect(64, 140, tw, 76, 38); x.fill();
+    x.fillStyle = p.estado === "nueva" ? '#f5c400' : 'rgba(30,30,30,.8)'; x.beginPath(); if (x.roundRect) x.roundRect(64, 140, tw, 76, 38); else x.rect(64, 140, tw, 76); x.fill();
     x.fillStyle = p.estado === "nueva" ? '#1c1c1c' : '#fff'; x.textBaseline = 'middle'; x.fillText(etiqueta, 96, 180);
   }
   // Textos
@@ -1453,10 +1462,14 @@ async function historiaPNG(p){
   x.fillStyle = 'rgba(255,255,255,.78)'; x.font = `400 38px ${F}`; x.fillText("Tocá el link para ver fotos, video y consultar", 64, H - 100);
   return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9));
 }
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 function copiarYa(texto){
   // Copia sin esperar (para no perder el "toque" que necesita el menú de compartir del celular)
-  const t = document.createElement('textarea'); t.value = texto; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
-  document.body.appendChild(t); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch {} t.remove(); return ok;
+  const t = document.createElement('textarea'); t.value = texto; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+  document.body.appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, texto.length);
+  let ok = false; try { ok = document.execCommand('copy'); } catch {} t.remove();
+  if (!ok) navigator.clipboard?.writeText(texto).catch(()=>{});
+  return ok;
 }
 $('#sh-story').onclick = async ()=>{
   const btn = $('#sh-story'); btn.classList.add('busy');
@@ -1467,14 +1480,29 @@ $('#sh-story').onclick = async ()=>{
     if (shareData.storyUrl) URL.revokeObjectURL(shareData.storyUrl);
     shareData.storyFile = file; shareData.storyUrl = URL.createObjectURL(blob);
     $('#story-prev').src = shareData.storyUrl;
-    $('#story-share').hidden = !navigator.canShare?.({ files: [file] });
+    const ios = IOS && navigator.canShare?.({ files: [file] });
+    $('#story-save').textContent = ios ? "1 · Guardar imagen" : "Guardar y abrir Instagram";
+    $('#story-open').hidden = !ios;
+    $('#story-share').hidden = ios || !navigator.canShare?.({ files: [file] });
+    $('#story-pasos').innerHTML = ios
+      ? `<li>Tocá <b>Guardar imagen</b> y en el menú elegí <b>Guardar imagen</b> (o directamente Instagram).</li>
+         <li>Tocá <b>Abrir Instagram</b> y elegí la foto desde la cámara de historias.</li>
+         <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>`
+      : `<li>Tocá <b>Guardar y abrir Instagram</b>.</li>
+         <li>En la cámara de historias, elegí la imagen de tu galería (es la última).</li>
+         <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>`;
     $('#share-sheet').classList.remove('open'); $('#story-sheet').classList.add('open');
   } catch { toast("No pude armar la imagen. Probá de nuevo."); }
   finally { btn.classList.remove('busy'); }
 };
 // Funciona en cualquier celular: guarda la imagen en la galería y abre la cámara de historias de Instagram
-$('#story-save').onclick = ()=>{
+$('#story-save').onclick = async ()=>{
   const copiado = copiarYa(shareData.url);
+  if (!$('#story-open').hidden) {   // iPhone: el menú de compartir tiene "Guardar imagen" (va a Fotos)
+    try { await navigator.share({ files: [shareData.storyFile] }); toast("Listo. Ahora tocá «Abrir Instagram»"); }
+    catch (e) { if (e.name !== "AbortError") toast("No se pudo abrir el menú. Probá de nuevo."); }
+    return;
+  }
   const a = document.createElement('a'); a.href = shareData.storyUrl; a.download = shareData.storyFile.name;
   document.body.appendChild(a); a.click(); a.remove();
   const celu = matchMedia('(pointer:coarse)').matches;
@@ -1482,6 +1510,7 @@ $('#story-save').onclick = ()=>{
   closeSheet();
   if (celu) setTimeout(()=>{ location.href = "instagram://story-camera"; }, 900);
 };
+$('#story-open').addEventListener('click', ()=> setTimeout(closeSheet, 300));
 $('#story-share').onclick = async ()=>{
   copiarYa(shareData.url);
   try { await navigator.share({ files: [shareData.storyFile] }); closeSheet(); toast("Agregá el sticker «Enlace» y pegá el link (ya está copiado)"); }
@@ -1495,12 +1524,12 @@ $('#sh-copy').onclick = ()=>{ copyLink("Link copiado"); closeSheet(); };
 $('#sh-ig').onclick = async ()=>{
   // En el celular abre el menú nativo, donde aparece Instagram (historias o mensaje directo)
   if (navigator.share && matchMedia('(pointer:coarse)').matches){
-    try { await navigator.share(shareData); closeSheet(); return; } catch(e){ if (e.name === "AbortError") return; }
+    try { await navigator.share({ title: shareData.title, text: shareData.text, url: shareData.url }); closeSheet(); return; } catch(e){ if (e.name === "AbortError") return; }
   }
   await copyLink("Link copiado: pegalo en tu historia o mensaje de Instagram");
   closeSheet();
 };
-$('#sh-more').onclick = async ()=>{ try { await navigator.share(shareData); closeSheet(); } catch {} };
+$('#sh-more').onclick = async ()=>{ try { await navigator.share({ title: shareData.title, text: shareData.text, url: shareData.url }); closeSheet(); } catch {} };
 ['#sh-wa','#sh-fb'].forEach(s=> $(s).addEventListener('click', ()=> setTimeout(closeSheet, 300)));
 $('#scrim').onclick = closeSheet;
 $('#opts').onclick = e=>{
