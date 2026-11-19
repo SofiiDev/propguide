@@ -15,8 +15,14 @@ create table if not exists public.suscriptores (
   created_at  timestamptz not null default now(),
   constraint suscriptores_email_valido check (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$' and length(email) <= 254),
   constraint suscriptores_campos_cortos check (
-    coalesce(length(interes), 0) <= 60 and coalesce(length(zona), 0) <= 80 and coalesce(length(origen), 0) <= 80
+    coalesce(length(interes), 0) <= 200 and coalesce(length(zona), 0) <= 80 and coalesce(length(origen), 0) <= 80
   )
+);
+
+-- El campo "interes" guarda varias opciones separadas por coma
+alter table public.suscriptores drop constraint if exists suscriptores_campos_cortos;
+alter table public.suscriptores add constraint suscriptores_campos_cortos check (
+  coalesce(length(interes), 0) <= 200 and coalesce(length(zona), 0) <= 80 and coalesce(length(origen), 0) <= 80
 );
 
 -- Un mismo email no se guarda dos veces (sin importar mayúsculas)

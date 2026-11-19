@@ -307,8 +307,19 @@
   .seg-opts button[aria-pressed="true"]{border-color:var(--brand);background:#ecf5f2;color:var(--brand);font-weight:600}
   .finput{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;font:16px Hind,sans-serif;background:#fff;color:var(--ink)}
   .finput:focus{outline:none;border-color:var(--brand)}
-  /* Pop-up de novedades */
-  .news-x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;color:var(--muted)}
+  /* Pop-up de novedades: ventana flotante centrada (no pegada abajo) */
+  #news-sheet{top:50%;bottom:auto;left:16px;right:16px;max-width:420px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;
+    border-radius:20px;padding:22px 18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.28);
+    transform:translateY(-45%) scale(.96);opacity:0;pointer-events:none;transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .2s}
+  #news-sheet.open{transform:translateY(-50%);opacity:1;pointer-events:auto}
+  #news-sheet .grab{display:none}
+  @media (min-width:452px){ #news-sheet{left:50%;right:auto;width:420px;transform:translate(-50%,-45%) scale(.96)} #news-sheet.open{transform:translate(-50%,-50%)} }
+  .news-ints{border:0;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .news-ints legend{grid-column:1/-1;margin-bottom:6px;padding:0}
+  .news-chk{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 10px;border:1.5px solid var(--line);border-radius:12px;font-size:14px;line-height:1.2;cursor:pointer;background:#fff}
+  .news-chk input{width:20px;height:20px;accent-color:var(--brand);flex:none}
+  .news-chk:has(input:checked){border-color:var(--brand);background:#ecf5f2;color:var(--brand);font-weight:600}
+  .news-x{position:absolute;top:8px;right:8px;width:44px;height:44px;border-radius:50%;font-size:28px;line-height:1;color:var(--ink);background:var(--bg)}
   .news-ic{width:48px;height:48px;border-radius:14px;background:#e1eeea;color:var(--brand);display:grid;place-items:center;margin-bottom:10px}
   .news-ic svg{width:24px;height:24px}
   .news-err{color:#b3261e;font-size:14px;min-height:18px;margin:6px 0 4px}
@@ -470,10 +481,14 @@
     <form id="news-form" novalidate>
       <label class="flbl" for="news-email">Tu email</label>
       <input class="finput" id="news-email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@email.com" required>
-      <label class="flbl" for="news-int" style="margin-top:10px">¿Qué te interesa? <span style="font-weight:400">(opcional)</span></label>
-      <div class="sel-wrap"><select class="finput" id="news-int">
-        <option value="">Todo</option><option>Comprar para vivir</option><option>Invertir</option><option>Desarrollos en pozo</option>
-      </select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      <fieldset class="news-ints" id="news-ints">
+        <legend class="flbl">¿Qué te interesa? <span style="font-weight:400">(podés elegir varias)</span></legend>
+        <label class="news-chk"><input type="checkbox" value="Quiero vender"><span>Quiero vender</span></label>
+        <label class="news-chk"><input type="checkbox" value="Quiero comprar"><span>Quiero comprar</span></label>
+        <label class="news-chk"><input type="checkbox" value="Inversiones"><span>Inversiones</span></label>
+        <label class="news-chk"><input type="checkbox" value="Desarrollos"><span>Desarrollos</span></label>
+        <label class="news-chk"><input type="checkbox" value="Flipping"><span>Flipping</span></label>
+      </fieldset>
       <input type="text" name="web" id="news-web" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
       <p class="news-err" id="news-err" role="alert"></p>
       <button class="btn btn-pri" type="submit" id="news-go" style="width:100%"></button>
@@ -991,7 +1006,7 @@ document.addEventListener('click', e=>{
 });
 document.addEventListener('keydown', e=>{
   if (e.key==="Enter" && e.target.matches('.card[data-c]')) e.target.click();
-  if (e.key==="Escape"){ closeSheet(); closeModal(); closeCompare(); }
+  if (e.key==="Escape"){ if ($('#news-sheet').classList.contains('open')) marcarCerrado(); closeSheet(); closeModal(); closeCompare(); }
 });
 new IntersectionObserver(([en])=>$('#filters').classList.toggle('stuck', en.intersectionRatio<1),{threshold:[1],rootMargin:"-1px 0px 0px 0px"}).observe($('#filters'));
 
@@ -1261,7 +1276,7 @@ function abrirNews(origen){
   $('#news-text').textContent = CFG.popupTexto;
   $('#news-go').textContent = CFG.popupBoton;
   $('#news-form-wrap').hidden = false; $('#news-ok').hidden = true; $('#news-err').textContent = "";
-  if (tipo === "pozo") $('#news-int').value = "Desarrollos en pozo";
+  document.querySelectorAll('#news-ints input').forEach(c => c.checked = tipo === "pozo" && c.value === "Desarrollos");
   $('#scrim').classList.add('open'); $('#news-sheet').classList.add('open');
 }
 function marcarCerrado(){ if ($('#news-ok').hidden && newsEstado() !== "suscripto") guardarNews("cerrado"); }
@@ -1275,7 +1290,7 @@ $('#news-form').onsubmit = async e=>{
   if ($('#news-web').value) { $('#news-form-wrap').hidden = true; $('#news-ok').hidden = false; return; }   // robot: no se guarda
   const btn = $('#news-go'); btn.disabled = true; btn.textContent = "Enviando…";
   try {
-    await Suscriptores.agregar({ email, interes: $('#news-int').value, zona: F.barrio || F.zona || "", origen: newsOrigen });
+    await Suscriptores.agregar({ email, interes: [...document.querySelectorAll('#news-ints input:checked')].map(c=>c.value).join(", "), zona: F.barrio || F.zona || "", origen: newsOrigen });
     guardarNews("suscripto");
     $('#news-form-wrap').hidden = true; $('#news-ok').hidden = false;
   } catch (err){ console.error(err); $('#news-err').textContent = "No se pudo enviar. Probá de nuevo en un rato."; }
