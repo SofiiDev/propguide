@@ -102,6 +102,23 @@ const Fotos = {
   },
 };
 
+/* ---------------- Videos de los tours (bucket "videos") ---------------- */
+const Videos = {
+  MAX_MB: 50,   // límite del plan gratis de Supabase por archivo
+  entra(file) { return file.size <= this.MAX_MB * 1024 * 1024; },
+  // Sube el archivo tal cual y devuelve su URL pública
+  async subir(file, carpeta = "tours") {
+    if (!this.entra(file)) throw new Error(`El video pesa más de ${this.MAX_MB} MB`);
+    if (MODO_DEMO) return URL.createObjectURL(file);   // demo: solo se ve en esta pestaña
+    const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
+    const tipo = file.type || (ext === "mov" ? "video/quicktime" : ext === "webm" ? "video/webm" : "video/mp4");
+    const path = `${carpeta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await sb.storage.from("videos").upload(path, file, { contentType: tipo, cacheControl: "31536000" });
+    fallo(error);
+    return sb.storage.from("videos").getPublicUrl(path).data.publicUrl;
+  },
+};
+
 /* ---------------- Sesión del administrador ---------------- */
 const Auth = {
   async usuario() {

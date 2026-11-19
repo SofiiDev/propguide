@@ -154,3 +154,25 @@ create policy "suscriptores: admin ve" on public.suscriptores
   for select using (public.es_admin());
 create policy "suscriptores: admin borra" on public.suscriptores
   for delete using (public.es_admin());
+
+-- ---------------------------------------------------------------------
+-- 7) Videos de los tours (también en videos.sql)
+-- ---------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('videos', 'videos', true, 52428800, array['video/mp4','video/quicktime','video/webm'])
+on conflict (id) do update set public = true, file_size_limit = 52428800,
+  allowed_mime_types = array['video/mp4','video/quicktime','video/webm'];
+
+drop policy if exists "videos: publico ve"  on storage.objects;
+drop policy if exists "videos: admin sube"  on storage.objects;
+drop policy if exists "videos: admin edita" on storage.objects;
+drop policy if exists "videos: admin borra" on storage.objects;
+
+create policy "videos: publico ve" on storage.objects
+  for select using (bucket_id = 'videos');
+create policy "videos: admin sube" on storage.objects
+  for insert with check (bucket_id = 'videos' and public.es_admin());
+create policy "videos: admin edita" on storage.objects
+  for update using (bucket_id = 'videos' and public.es_admin());
+create policy "videos: admin borra" on storage.objects
+  for delete using (bucket_id = 'videos' and public.es_admin());

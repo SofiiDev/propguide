@@ -154,6 +154,21 @@
   .sub div{flex:1;min-width:0}
   .sub b{display:block;font-size:15px;overflow-wrap:anywhere}
   .sub span{display:block;font-size:13px;color:var(--muted)}
+  /* Importador */
+  .imp-pre{background:var(--bg);border-radius:12px;padding:12px;font-size:13px;line-height:1.5;overflow-x:auto;margin:10px 0;white-space:pre}
+  .imp-res{font-weight:600;margin-bottom:8px}
+  .imp-item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
+  .imp-item.off{opacity:.6}
+  .imp-chk{display:grid;place-items:center;width:32px;min-height:44px;flex:none}
+  .imp-chk input{width:22px;height:22px;accent-color:var(--brand)}
+  .imp-th{width:64px;height:64px;border-radius:10px;overflow:hidden;background:#ddd5c8;flex:none}
+  .imp-th img{width:100%;height:100%;object-fit:cover}
+  .imp-info{flex:1;min-width:0}
+  .imp-info b{display:block;line-height:1.25;overflow-wrap:anywhere}
+  .imp-info span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+  .imp-av{margin:6px 0 0 16px;font-size:12.5px;color:#8a5a00}
+  .imp-st{font-size:13px;font-weight:600;margin-top:6px;color:var(--brand)}
+  .imp-st.err{color:var(--danger)}
   .toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;z-index:80;pointer-events:none;white-space:nowrap}
   .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -210,6 +225,11 @@
     <span class="pf-av" aria-hidden="true" style="background:#e1eeea;color:var(--brand)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
     <span class="info"><b>Suscriptores <span id="subs-n"></span></b><span>Emails del pop-up de novedades</span></span>
     <span class="go">Ver</span>
+  </button>
+  <button class="profile" id="open-imp" type="button" aria-label="Importar propiedades desde una carpeta de tu computadora" style="margin-top:8px">
+    <span class="pf-av" aria-hidden="true" style="background:#e1eeea;color:var(--brand)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5 12 11l2.5 2.5"/></svg></span>
+    <span class="info"><b>Importar desde carpeta</b><span>Fotos, video y descripción de tu computadora</span></span>
+    <span class="go">Abrir</span>
   </button>
   <div class="stats" id="stats" role="group" aria-label="Filtrar por estado"></div>
   <div class="search"><input type="search" id="q" placeholder="Buscar por título, barrio o código" aria-label="Buscar"></div>
@@ -326,6 +346,54 @@
   </div></div>
 </div>
 
+<!-- ============ IMPORTAR DESDE CARPETA ============ -->
+<div class="editor" id="imp" role="dialog" aria-modal="true" aria-labelledby="imp-title">
+  <div class="ed-top"><div class="wrap">
+    <button class="ib" id="imp-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="imp-title">Importar desde carpeta</h2>
+    <span style="width:40px"></span>
+  </div></div>
+  <div class="wrap" style="padding:16px 16px calc(120px + var(--safe-b))">
+    <section id="imp-paso1">
+      <fieldset>
+        <legend>Cómo preparar la carpeta</legend>
+        <p class="hint" style="clear:both;font-size:14px;color:var(--ink)">Una carpeta por propiedad, con sus fotos, el video y un archivo .txt con los datos:</p>
+<pre class="imp-pre">Propiedades/
+  Depto Palermo Gorriti/
+    ficha.txt
+    portada.jpg
+    foto2.jpg  foto3.jpg …
+    tour.mp4
+  Casa Olivos/
+    ficha.txt
+    …</pre>
+        <p class="hint" style="font-size:14px">En el .txt escribí cada dato como <b>Campo: valor</b> (Precio, Barrio, Ambientes, m²…) y después <b>Descripción:</b> con el texto. Si escribís todo junto, igual intento encontrar precio, ambientes, m² y barrio.</p>
+        <a class="btn btn-ghost" href="plantilla-ficha.txt" download="ficha.txt" style="display:flex;align-items:center;justify-content:center;margin-top:12px;text-decoration:none">Descargar plantilla ficha.txt</a>
+      </fieldset>
+      <fieldset>
+        <legend>Elegí la carpeta</legend>
+        <p class="hint" style="clear:both;font-size:14px">Elegí la carpeta que contiene todas las propiedades (o una sola). Nada se sube hasta que lo confirmes.</p>
+        <label class="btn btn-pri" for="imp-dir" style="display:flex;align-items:center;justify-content:center;margin-top:12px;cursor:pointer">Elegir carpeta</label>
+        <input type="file" id="imp-dir" webkitdirectory directory multiple hidden>
+        <p class="hint" id="imp-cargando" hidden style="margin-top:10px">Leyendo archivos…</p>
+        <p class="hint" style="margin-top:10px">Funciona desde una computadora con Chrome, Edge o Firefox. Videos de hasta 50 MB.</p>
+      </fieldset>
+    </section>
+
+    <section id="imp-paso2" hidden>
+      <p class="imp-res" id="imp-resumen"></p>
+      <label class="check" style="margin:4px 0 12px"><input type="checkbox" id="imp-publicar"> Publicar directamente en la galería</label>
+      <p class="hint" style="margin:-6px 0 12px">Si no lo marcás, se importan <b>ocultas</b> para que las revises y las publiques con el ojo.</p>
+      <div id="imp-list"></div>
+      <button class="btn btn-ghost" type="button" id="imp-otra" style="width:100%;margin-top:8px">Elegir otra carpeta</button>
+    </section>
+  </div>
+  <div class="ed-bar"><div class="wrap">
+    <button type="button" class="btn btn-ghost" id="imp-cancel">Cerrar</button>
+    <button type="button" class="btn btn-pri" id="imp-go" disabled>Importar</button>
+  </div></div>
+</div>
+
 <!-- ============ SUSCRIPTORES ============ -->
 <div class="editor" id="subs" role="dialog" aria-modal="true" aria-labelledby="subs-title">
   <div class="ed-top"><div class="wrap">
@@ -437,5 +505,6 @@
 <script src="data.js"></script>
 <script src="store.js"></script>
 <script src="admin.js"></script>
+<script src="importar.js"></script>
 </body>
 </html>

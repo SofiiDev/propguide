@@ -99,6 +99,30 @@ Agregá un botón, por ejemplo **“🏠 Propiedades en venta”**, con el link 
 | Cambiar mi foto, WhatsApp o textos | Panel → **Mi perfil y textos** |
 | Compartir una propiedad | Ficha → botón compartir (link con forma `?p=NX-102`) |
 
+## Importar propiedades desde una carpeta
+
+Para cargar muchas propiedades de una vez desde tu computadora.
+
+**Una sola vez:** ejecutá `supabase/videos.sql` en el SQL Editor (crea el espacio para los videos).
+
+1. Armá una carpeta por propiedad con sus fotos (`.jpg`, `.png`, `.webp`), su video (`.mp4`, hasta 50 MB) y un `ficha.txt`:
+   ```
+   Propiedades/
+     Depto Palermo Gorriti/
+       ficha.txt
+       portada.jpg  foto2.jpg  foto3.jpg
+       tour.mp4
+   ```
+2. Para el `ficha.txt` usá la plantilla (`public/plantilla-ficha.txt`, también se descarga desde el panel):
+   cada dato como `Campo: valor` y después `Descripción:` con el texto libre.
+3. En el panel tocá **Importar desde carpeta → Elegir carpeta** y elegí la carpeta `Propiedades`.
+4. Revisá la vista previa: cada propiedad muestra lo que se detectó y los avisos (falta precio, video muy pesado…).
+   Destildá las que no quieras importar.
+5. Tocá **Importar**. Las fotos se achican y se suben, el video se sube y la propiedad se crea **oculta**
+   para que la revises (o marcá *Publicar directamente*).
+
+Videos de más de 50 MB: subilos a YouTube como *no listado* y agregá `Video: https://youtu.be/...` al `ficha.txt`.
+
 ## Modo demo
 
 Mientras `config.js` tenga los valores de ejemplo, el sitio funciona en **modo demo**: muestra

@@ -1,0 +1,42 @@
+Título: Luminoso 3 ambientes con balcón
+Tipo: Departamento
+Precio: USD 185.000
+Expensas: 120.000
+Zona: Capital Federal
+Barrio: Palermo
+Dirección: Gorriti al 4800
+Ambientes: 3
+Dormitorios: 2
+Baños: 1
+Superficie total: 85
+Superficie cubierta: 78
+Antigüedad: 12
+Cochera: no
+Apto crédito: sí
+Disposición: Frente
+Destacados: Balcón, Laundry, SUM, Seguridad 24 h
+Estado: Disponible
+
+Descripción:
+Departamento al frente, muy luminoso, con balcón corrido y vista abierta.
+
+Living comedor amplio integrado a cocina con barra. Dos dormitorios con placard.
+Edificio con seguridad 24 h, SUM y laundry. A 2 cuadras del subte D.
+
+----------------------------------------------------------------------
+CÓMO USAR ESTA PLANTILLA
+- Poné este archivo dentro de la carpeta de la propiedad, junto a sus fotos y su video.
+- Cambiá los valores después de los dos puntos. Si no sabés uno, borrá esa línea.
+- Tipo: Departamento, Casa, PH, Desarrollo en pozo, Terreno o Local.
+- Estado: Disponible, Nuevo ingreso, Reservada o Vendida.
+- Todo lo que va después de "Descripción:" se toma como la descripción.
+- La foto que se llame "portada" (portada.jpg) va primera. Si no hay, se ordenan por nombre.
+- Video: un archivo .mp4 de hasta 50 MB. Si pesa más, subilo a YouTube como
+  "no listado" y agregá la línea:  Video: https://youtu.be/...
+- Para un desarrollo en pozo, podés agregar:
+    Entrega: Diciembre 2027
+    Avance de obra: 35
+    Financiación: 30% de anticipo y el saldo en 36 cuotas
+    Ambientes hasta: 3
+    Unidades: Monoambiente | 38 | 98000 ; 2 ambientes | 52 | 132000
+- Estas instrucciones (desde la línea de guiones) se ignoran al importar.
