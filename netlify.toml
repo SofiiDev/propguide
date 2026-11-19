@@ -9,6 +9,17 @@
   to = "/admin.html"
   status = 200
 
+# Página de alquileres (y /venta como alias de la de ventas): misma galería
+[[redirects]]
+  from = "/alquiler"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/venta"
+  to = "/index.html"
+  status = 200
+
 # El panel no tiene que aparecer en Google
 [[headers]]
   for = "/admin*"

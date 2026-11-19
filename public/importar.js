@@ -244,7 +244,6 @@ async function analizarCarpeta(files){
     const video = p.video ? null : (g.videos[0] || null);   // si ya hay link de YouTube, no se sube el archivo
     const avisos = [], bloqueos = [];
     if (estadoTxt || /^\[no publicada\]/i.test(g.nombre)) bloqueos.push("Marcada como no publicada (vendida, alquilada o quitada)");
-    if (p.operacion === "alquiler") bloqueos.push("Es un alquiler: la galería es de propiedades en venta");
     if (!p.precio) bloqueos.push("Falta el precio");
     if (!g.fotos.length) bloqueos.push("No tiene fotos");
     if (!ordenados.length) avisos.push("No tiene .txt: se usa el nombre de la carpeta como título");
@@ -268,7 +267,7 @@ function renderImport(){
   $('#imp-list').innerHTML = IMPORT.map((x, i) => {
     const p = x.p, thumb = x.fotos[0] ? (x._thumb ||= URL.createObjectURL(x.fotos[0])) : "";
     const amb = p.ambMax > p.ambientes ? `${p.ambientes} a ${p.ambMax} amb.` : p.ambientes ? `${p.ambientes} amb.` : "";
-    const datos = [p.tipo, amb, p.m2 ? `${p.m2} m²` : "", p.barrio].filter(Boolean).join(" · ");
+    const datos = [p.operacion === "alquiler" ? "Alquiler" : "Venta", p.tipo, amb, p.m2 ? `${p.m2} m²` : "", p.barrio].filter(Boolean).join(" · ");
     const nf = Math.min(x.fotos.length, maxFotos());
     const extras = [p.video ? "video" : x.video && Videos.entra(x.video) ? "video (archivo)" : "", p.tour360 ? "tour 360°" : ""].filter(Boolean);
     return `<article class="imp-item ${x.incluir ? "" : "off"}">
@@ -387,7 +386,7 @@ $('#imp-go').onclick = async ()=>{
   for (const x of items) if (!x.p.codigo) x.p.codigo = "NX-" + String(++ultimo).padStart(3, "0");
   await enParalelo(items, PROP_A_LA_VEZ, async x => {
     try {
-      const { operacion, ...datos } = x.p;
+      const datos = { ...x.p };
       const p = { ...datos, publicada: publicar, publicado: new Date().toISOString().slice(0, 10) };
       const fotos = x.fotos.slice(0, tope), subidas = new Array(fotos.length).fill(null);
       let listas = 0;

@@ -30,6 +30,9 @@
   .link{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap;flex:none}
 
   /* Stats = filtros por estado */
+  .op-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:14px 16px 0;padding:4px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+  .op-tabs button{min-height:44px;border-radius:10px;font-weight:600;color:var(--muted)}
+  .op-tabs button[aria-selected="true"]{background:var(--brand);color:#fff}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 6px}
   .stat{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;min-height:64px}
   .stat b{display:block;font:700 22px Hind,sans-serif}
@@ -242,6 +245,7 @@
     <span class="info"><b>Importar desde carpeta</b><span>Fotos, video y descripción de tu computadora</span></span>
     <span class="go">Abrir</span>
   </button>
+  <div class="op-tabs" id="op-tabs" role="tablist" aria-label="Venta o alquiler"></div>
   <div class="stats" id="stats" role="group" aria-label="Filtrar por estado"></div>
   <div class="search"><input type="search" id="q" placeholder="Buscar por título, barrio o código" aria-label="Buscar"></div>
   <section class="list" id="list"></section>
@@ -292,11 +296,22 @@
       <legend>Datos principales</legend>
       <div class="grid">
         <div class="full"><label for="f-titulo">Título</label><input type="text" id="f-titulo" name="titulo" required placeholder="Luminoso 3 ambientes con balcón"></div>
+        <div><label for="f-op">Operación</label><select id="f-op" name="operacion"><option value="venta">Venta</option><option value="alquiler">Alquiler</option></select></div>
         <div><label for="f-tipo">Tipo</label><select id="f-tipo" name="tipo"><option>Departamento</option><option>Casa</option><option>PH</option><option>Desarrollo en pozo</option><option>Oficina</option><option>Terreno</option><option>Local</option></select></div>
         <div><label for="f-codigo">Código</label><input type="text" id="f-codigo" name="codigo" readonly></div>
         <div><label for="f-moneda">Moneda</label><select id="f-moneda" name="moneda"><option>USD</option><option>ARS</option></select></div>
         <div><label for="f-precio" id="lbl-precio">Precio</label><input type="number" inputmode="numeric" id="f-precio" name="precio" min="0" required></div>
         <div class="full"><label for="f-expensas">Expensas ($ / mes)</label><input type="number" inputmode="numeric" id="f-expensas" name="expensas" min="0"></div>
+      </div>
+    </fieldset>
+
+    <fieldset id="fs-alq" hidden>
+      <legend>Condiciones del alquiler</legend>
+      <div class="grid">
+        <div><label for="f-disp">Disponible desde</label><input type="text" id="f-disp" name="disponibleDesde" placeholder="Inmediata / 1 de marzo"></div>
+        <div><label for="f-contrato">Contrato</label><input type="text" id="f-contrato" name="contrato" placeholder="24 meses"></div>
+        <div class="full"><label for="f-req">Requisitos y garantías</label><textarea id="f-req" name="requisitos" rows="3" placeholder="Garantía propietaria o seguro de caución, recibo de sueldo…"></textarea></div>
+        <div class="full"><label class="check"><input type="checkbox" name="mascotas"> Apto mascotas</label><label class="check"><input type="checkbox" name="amueblado"> Amueblado</label></div>
       </div>
     </fieldset>
 
@@ -481,6 +496,8 @@
       <div class="grid">
         <div class="full"><label for="c-tit">Título</label><input type="text" id="c-tit" name="titulo"></div>
         <div class="full"><label for="c-sub">Subtítulo</label><input type="text" id="c-sub" name="subtitulo"></div>
+        <div class="full"><label for="c-tita">Título de la página de alquiler</label><input type="text" id="c-tita" name="tituloAlquiler" placeholder="Propiedades en alquiler"></div>
+        <div class="full"><label for="c-suba">Subtítulo de la página de alquiler</label><input type="text" id="c-suba" name="subtituloAlquiler" placeholder="Si lo dejás vacío se usa el de venta"><p class="hint">Link de venta: tu sitio. Link de alquiler: tu sitio + <b>/alquiler</b>.</p></div>
       </div>
     </fieldset>
 

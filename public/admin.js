@@ -96,14 +96,19 @@ async function recargar(){ TODAS = await Store.all(); render(); }
 /* =========================================================
    LISTADO
    ========================================================= */
+let filtroOp = "venta";
+const opDe = p => p.operacion === "alquiler" ? "alquiler" : "venta";
 function render(){
-  const all = TODAS;
+  const cuenta = o => TODAS.filter(p => opDe(p) === o).length;
+  $('#op-tabs').innerHTML = [["venta","Venta"],["alquiler","Alquiler"]].map(([o,l]) =>
+    `<button type="button" role="tab" data-op="${o}" aria-selected="${o===filtroOp}">${l} (${cuenta(o)})</button>`).join("");
+  const all = TODAS.filter(p => opDe(p) === filtroOp);
   const n = e => all.filter(p=>p.estado===e || (e==="disponible" && p.estado==="nueva")).length;
   const S = [
     {id:"todas", n:all.length, l:"Todas"},
     {id:"disponible", n:n("disponible"), l:"Disponibles"},
     {id:"reservada", n:n("reservada"), l:"Reservadas"},
-    {id:"vendida", n:n("vendida"), l:"Vendidas"},
+    {id:"vendida", n:n("vendida"), l:filtroOp === "alquiler" ? "Alquiladas" : "Vendidas"},
   ];
   $('#stats').innerHTML = S.map(s=>`<button class="stat" data-s="${s.id}" aria-pressed="${s.id===filtroEstado}"><b>${s.n}</b><span>${s.l}</span></button>`).join("");
 
@@ -121,10 +126,10 @@ function render(){
     const gris = p.estado==="reservada"||p.estado==="vendida";
     return `<article class="row ${p.publicada===false?'hidden-prop':''}" data-c="${esc(p.codigo)}">
       <div class="row-head">
-        <div class="thumb ${gris?'gris':''}">${p.fotos?.[0]?`<img src="${esc(p.fotos[0])}" alt="" loading="lazy">`:""}${gris?`<span class="tag">${p.estado}</span>`:""}</div>
+        <div class="thumb ${gris?'gris':''}">${p.fotos?.[0]?`<img src="${esc(p.fotos[0])}" alt="" loading="lazy">`:""}${gris?`<span class="tag">${p.estado==="vendida"&&opDe(p)==="alquiler"?"alquilada":p.estado}</span>`:""}</div>
         <div class="info">
           <b>${esc(p.titulo) || "Sin título"}</b>
-          <div class="p">${p.tipo==="Desarrollo en pozo"?"Desde ":""}${esc(p.moneda)} ${fmt(p.precio)}</div>
+          <div class="p">${p.tipo==="Desarrollo en pozo"?"Desde ":""}${esc(p.moneda)} ${fmt(p.precio)}${opDe(p)==="alquiler"?" /mes":""}</div>
           <div class="c">${esc(p.codigo)} · ${esc(p.barrio) || "—"}${p.etiqueta?` · ${esc(p.etiqueta)}`:""}${p.publicada===false?" · <strong>Oculta</strong>":""}</div>
         </div>
         <div class="acts">
@@ -133,12 +138,14 @@ function render(){
         </div>
       </div>
       <div class="seg" role="group" aria-label="Estado de ${esc(p.titulo)}">
-        ${ESTADOS.map(e=>`<button data-e="${e.id}" aria-pressed="${p.estado===e.id}">${e.corto}</button>`).join("")}
+        ${ESTADOS.map(e=>`<button data-e="${e.id}" aria-pressed="${p.estado===e.id}">${e.id==="vendida"&&opDe(p)==="alquiler"?"Alq.":e.corto}</button>`).join("")}
       </div>
     </article>`}).join("") : `<p class="empty">No hay propiedades para mostrar.</p>`;
 }
 
 document.addEventListener('click', async e=>{
+  const o = e.target.closest('[data-op]');
+  if (o){ filtroOp = o.dataset.op; filtroEstado = "todas"; render(); return; }
   const s = e.target.closest('[data-s]');
   if (s){ filtroEstado = s.dataset.s; render(); return; }
   if (e.target.closest('#seed')){
@@ -178,7 +185,8 @@ $('#f-zona').innerHTML = `<option value="">Elegí una zona</option>` + ZONAS.map
 async function openEditor(p){
   esNueva = !p;
   editando = p ? structuredClone(p)
-    : { codigo: await Store.nextCodigo(), estado:"nueva", publicada:true, moneda:"USD", tipo:"Departamento", fotos:[], amenities:[] };
+    : { codigo: await Store.nextCodigo(), estado:"nueva", publicada:true, moneda: filtroOp === "alquiler" ? "ARS" : "USD", tipo:"Departamento", fotos:[], amenities:[] };
+  editando.operacion = opDe(editando.operacion ? editando : { operacion: esNueva ? filtroOp : "venta" });
   $('#ed-title').textContent = esNueva ? "Nueva propiedad" : "Editar propiedad";
   $('#del').hidden = esNueva;
   for (const el of form.elements){
@@ -196,7 +204,7 @@ async function openEditor(p){
   form.pz_avance.value = pz.avance ?? "";
   form.pz_fin.value = pz.financiacion || "";
   form.pz_tipos.value = (pz.tipologias||[]).map(t=>`${t.amb} | ${t.m2} | ${t.precio}`).join("\n");
-  togglePozo();
+  togglePozo(); toggleAlq();
   form.zona.value = zonaDe(editando); sugerirBarrios();
   $('#editor').classList.add('open'); $('#editor').scrollTop = 0;
   document.body.style.overflow = "hidden";
@@ -215,6 +223,13 @@ function togglePozo(){
   $('#lbl-precio').textContent = pozo ? "Precio desde" : "Precio";
 }
 form.tipo.addEventListener('change', togglePozo);
+function toggleAlq(){
+  const alq = form.operacion.value === "alquiler";
+  $('#fs-alq').hidden = !alq;
+  if (alq) $('#lbl-precio').textContent = "Precio por mes";
+  else togglePozo();
+}
+form.operacion.addEventListener('change', toggleAlq);
 function closeEditor(){ $('#editor').classList.remove('open'); document.body.style.overflow = ""; }
 $('#ed-close').onclick = closeEditor; $('#ed-cancel').onclick = closeEditor;
 
@@ -267,6 +282,10 @@ form.onsubmit = async e=>{
     };
   } else { delete p.pozo; delete p.ambMax; }
   ["pz_entrega","pz_avance","pz_fin","pz_tipos"].forEach(k=>delete p[k]);
+  if (p.operacion === "alquiler") {
+    Object.assign(p, { mascotas: form.mascotas.checked, amueblado: form.amueblado.checked,
+      disponibleDesde: (d.disponibleDesde || "").trim(), contrato: (d.contrato || "").trim(), requisitos: (d.requisitos || "").trim() });
+  } else ["mascotas","amueblado","disponibleDesde","contrato","requisitos"].forEach(k => delete p[k]);
   try {
     await conEspera($('.ed-bar .btn-pri'), "Guardando…", ()=>Store.upsert(p));
     closeEditor(); await recargar(); toast(esNueva ? "Propiedad creada" : "Cambios guardados");
@@ -291,7 +310,7 @@ function renderProfile(){
   $('#pf-name').textContent = CFGA.nombre;
 }
 function fillCfg(c){
-  for (const k of ["nombre","rol","whatsapp","instagram","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio","legalTexto","legalCorredores"]) cfgForm[k].value = c[k] || "";
+  for (const k of ["nombre","rol","whatsapp","instagram","titulo","subtitulo","tituloAlquiler","subtituloAlquiler","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio","legalTexto","legalCorredores"]) cfgForm[k].value = c[k] || "";
   [0,1,2].forEach(i => cfgForm["p"+(i+1)].value = (c.ayudaPuntos||[])[i] || "");
   cfgForm.popupActivo.checked = c.popupActivo !== false;
   for (const k of ["popupSegundos","popupTitulo","popupTexto","popupBoton"]) cfgForm[k].value = c[k] ?? "";
@@ -336,6 +355,7 @@ cfgForm.onsubmit = async e=>{
     nombre: d.nombre.trim() || D.nombre, rol: d.rol.trim(), whatsapp: wa, foto: cfgFoto, header: cfgHeader,
     instagram: (d.instagram || "").trim().replace(/^@?/, d.instagram.trim() ? "@" : ""),
     titulo: d.titulo.trim() || D.titulo, subtitulo: d.subtitulo.trim(),
+    tituloAlquiler: (d.tituloAlquiler || "").trim() || D.tituloAlquiler, subtituloAlquiler: (d.subtituloAlquiler || "").trim(),
     ayudaTitulo: d.ayudaTitulo.trim() || D.ayudaTitulo,
     ayudaTituloFicha: d.ayudaTituloFicha.trim() || D.ayudaTituloFicha,
     ayudaTexto: d.ayudaTexto.trim(), ayudaBoton: d.ayudaBoton.trim() || D.ayudaBoton,

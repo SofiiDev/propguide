@@ -194,6 +194,7 @@ const Config = {
     instagram: "@soy.sofiavitale",  // aparece en la imagen de la ficha
     header: "",                     // header de inicio: vacío = el de Nexia, "sin" = ninguno, o el link de una imagen subida
     titulo: "Propiedades en venta",
+    tituloAlquiler: "Propiedades en alquiler",
     subtitulo: "Fotos, tour en video y visitas por WhatsApp",
     ayudaTitulo: "¿No encontraste lo que buscabas?",
     ayudaTituloFicha: "¿Querés ver más opciones? Hablemos.",
@@ -227,7 +228,7 @@ const Config = {
     const { error } = await sb.from("config").upsert({ id: 1, data: cfg, updated_at: new Date().toISOString() });
     fallo(error);
   },
-  HEADER_NEXIA: "header-nexia.jpg",
+  HEADER_NEXIA: "/header-nexia.jpg",
   // Imagen de header que corresponde mostrar ("" si se quitó)
   headerDe(c) { return c.header === "sin" ? "" : (c.header || this.HEADER_NEXIA); },
   iniciales(nombre) {

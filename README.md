@@ -99,6 +99,18 @@ Agregá un botón, por ejemplo **“🏠 Propiedades en venta”**, con el link 
 | Cambiar mi foto, WhatsApp o textos | Panel → **Mi perfil y textos** |
 | Compartir una propiedad | Ficha → botón compartir (link con forma `?p=NX-102`) |
 
+## Venta y alquiler
+
+La misma galería tiene dos links, cada uno con sus propiedades y un selector para pasar al otro:
+
+- **Venta:** `https://tu-sitio.netlify.app` (o `/venta`)
+- **Alquiler:** `https://tu-sitio.netlify.app/alquiler`
+
+En el panel, cada propiedad tiene **Operación: Venta / Alquiler** y la lista se separa en dos pestañas.
+Los alquileres muestran el precio por mes, "Alquilada" en lugar de "Vendida" y un bloque de condiciones
+(disponible desde, contrato, requisitos, mascotas, amueblado). El título de la página de alquiler se edita
+en **Mi perfil y textos**. El importador trae los alquileres (los reconoce por "ALQUILER" en el nombre).
+
 ## Importar propiedades desde una carpeta
 
 Para cargar muchas propiedades de una vez desde tu computadora.
