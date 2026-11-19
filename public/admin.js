@@ -282,7 +282,7 @@ $('#del').onclick = async ()=>{
    ========================================================= */
 const cfgForm = $('#cfg-form');
 let cfgFoto = "", cfgHeader = "", subiendoFoto = false;
-function renderHd(){ const el = $('#cfg-hd'); el.classList.toggle("on", !!cfgHeader); el.style.backgroundImage = cfgHeader ? `url("${cfgHeader}")` : ""; el.textContent = cfgHeader ? "" : "Sin header"; }
+function renderHd(){ const el = $('#cfg-hd'), src = Config.headerDe({ header: cfgHeader }); el.classList.toggle("on", !!src); el.style.backgroundImage = src ? `url("${src}")` : ""; el.textContent = src ? "" : "Sin header"; }
 const avHTML = (foto, nombre) => foto
   ? `<img class="pf-av" src="${esc(foto)}" alt="">`
   : `<span class="pf-av" aria-hidden="true">${esc(Config.iniciales(nombre))}</span>`;
@@ -317,7 +317,8 @@ $('#cfg-hdfile').onchange = async e=>{
   catch (err){ toast("No se pudo subir el header: " + err.message); }
   finally { subiendoFoto = false; renderHd(); }
 };
-$('#cfg-rmhd').onclick = ()=>{ cfgHeader = ""; renderHd(); };
+$('#cfg-rmhd').onclick = ()=>{ cfgHeader = "sin"; renderHd(); };
+$('#cfg-defhd').onclick = ()=>{ cfgHeader = ""; renderHd(); };
 $('#cfg-rmfoto').onclick = ()=>{ cfgFoto = ""; $('#cfg-av').innerHTML = avHTML("", cfgForm.nombre.value); };
 $('#cfg-reset').onclick = ()=>{
   if (!confirm("¿Volver a los textos originales? Tu foto, nombre y WhatsApp se mantienen.")) return;
