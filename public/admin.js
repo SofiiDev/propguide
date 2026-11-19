@@ -281,7 +281,8 @@ $('#del').onclick = async ()=>{
    MI PERFIL Y TEXTOS
    ========================================================= */
 const cfgForm = $('#cfg-form');
-let cfgFoto = "", subiendoFoto = false;
+let cfgFoto = "", cfgHeader = "", subiendoFoto = false;
+function renderHd(){ const el = $('#cfg-hd'); el.classList.toggle("on", !!cfgHeader); el.style.backgroundImage = cfgHeader ? `url("${cfgHeader}")` : ""; el.textContent = cfgHeader ? "" : "Sin header"; }
 const avHTML = (foto, nombre) => foto
   ? `<img class="pf-av" src="${esc(foto)}" alt="">`
   : `<span class="pf-av" aria-hidden="true">${esc(Config.iniciales(nombre))}</span>`;
@@ -294,7 +295,7 @@ function fillCfg(c){
   [0,1,2].forEach(i => cfgForm["p"+(i+1)].value = (c.ayudaPuntos||[])[i] || "");
   cfgForm.popupActivo.checked = c.popupActivo !== false;
   for (const k of ["popupSegundos","popupTitulo","popupTexto","popupBoton"]) cfgForm[k].value = c[k] ?? "";
-  cfgFoto = c.foto || "";
+  cfgFoto = c.foto || ""; cfgHeader = c.header || ""; renderHd();
   $('#cfg-av').innerHTML = avHTML(cfgFoto, c.nombre);
 }
 function openCfg(){ fillCfg(CFGA); $('#cfg').classList.add('open'); $('#cfg').scrollTop = 0; document.body.style.overflow = "hidden"; }
@@ -309,11 +310,19 @@ $('#cfg-file').onchange = async e=>{
   catch (err){ toast("No se pudo subir la foto: " + err.message); }
   finally { subiendoFoto = false; $('#cfg-av').innerHTML = avHTML(cfgFoto, cfgForm.nombre.value); }
 };
+$('#cfg-hdfile').onchange = async e=>{
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  subiendoFoto = true; $('#cfg-hd').textContent = "Subiendo…";
+  try { cfgHeader = await Fotos.subir(file, "perfil", { max: 1800, calidad: 0.85 }); }
+  catch (err){ toast("No se pudo subir el header: " + err.message); }
+  finally { subiendoFoto = false; renderHd(); }
+};
+$('#cfg-rmhd').onclick = ()=>{ cfgHeader = ""; renderHd(); };
 $('#cfg-rmfoto').onclick = ()=>{ cfgFoto = ""; $('#cfg-av').innerHTML = avHTML("", cfgForm.nombre.value); };
 $('#cfg-reset').onclick = ()=>{
   if (!confirm("¿Volver a los textos originales? Tu foto, nombre y WhatsApp se mantienen.")) return;
   const cur = { nombre:cfgForm.nombre.value, rol:cfgForm.rol.value, whatsapp:cfgForm.whatsapp.value };
-  fillCfg({ ...Config.DEFAULTS, ...cur, foto: cfgFoto });
+  fillCfg({ ...Config.DEFAULTS, ...cur, foto: cfgFoto, header: cfgHeader });
 };
 cfgForm.onsubmit = async e=>{
   e.preventDefault();
@@ -323,7 +332,7 @@ cfgForm.onsubmit = async e=>{
   if (wa.length < 10){ toast("Revisá el número de WhatsApp"); cfgForm.whatsapp.focus(); return; }
   const D = Config.DEFAULTS;
   const cfg = {
-    nombre: d.nombre.trim() || D.nombre, rol: d.rol.trim(), whatsapp: wa, foto: cfgFoto,
+    nombre: d.nombre.trim() || D.nombre, rol: d.rol.trim(), whatsapp: wa, foto: cfgFoto, header: cfgHeader,
     instagram: (d.instagram || "").trim().replace(/^@?/, d.instagram.trim() ? "@" : ""),
     titulo: d.titulo.trim() || D.titulo, subtitulo: d.subtitulo.trim(),
     ayudaTitulo: d.ayudaTitulo.trim() || D.ayudaTitulo,

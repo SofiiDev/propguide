@@ -171,6 +171,8 @@
   .imp-st.err{color:var(--danger)}
   .toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;z-index:80;pointer-events:none;white-space:nowrap}
   .toast.show{opacity:1;transform:translate(-50%,0)}
+  .hd-prev{aspect-ratio:3/1;border-radius:12px;background:var(--bg,#f4f1ec) center/cover no-repeat;border:1.5px dashed var(--line);display:grid;place-items:center;font-size:13px;color:var(--muted)}
+  .hd-prev.on{border-style:solid}
 </style>
 </head>
 <body>
@@ -438,6 +440,14 @@
         <input type="file" id="cfg-file" accept="image/*" hidden>
       </div>
       <p class="hint" style="margin-bottom:12px">Se ve arriba de la galería, en cada ficha y en el bloque "Hablemos". Mejor una foto cuadrada, de frente.</p>
+      <label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Header de la página de inicio</label>
+      <div id="cfg-hd" class="hd-prev"></div>
+      <div class="btns" style="display:flex;gap:8px;margin:8px 0 6px">
+        <label class="btn btn-pri" for="cfg-hdfile" style="display:flex;align-items:center">Subir header</label>
+        <button type="button" class="btn btn-ghost" id="cfg-rmhd">Quitar</button>
+      </div>
+      <input type="file" id="cfg-hdfile" accept="image/*" hidden>
+      <p class="hint" style="margin-bottom:12px">Imagen ancha que va arriba de todo (ideal 1500 × 500 px). Podés armarla con tu logo, una foto o lo que quieras. Si no subís ninguna, no se muestra.</p>
       <div class="grid">
         <div class="full"><label for="c-nombre">Nombre</label><input type="text" id="c-nombre" name="nombre"></div>
         <div class="full"><label for="c-rol">Cargo y matrícula</label><input type="text" id="c-rol" name="rol" placeholder="Corredora inmobiliaria · Mat. 1234"></div>

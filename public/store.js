@@ -191,7 +191,8 @@ const Config = {
     rol: "Corredor/a inmobiliario/a · Mat. 0000",
     foto: "",                       // vacío = se muestran tus iniciales
     whatsapp: "5491100000000",
-    instagram: "@soy.sofiavitale",  // aparece en la imagen de la ficha      // 549 + código de área + número, sin 0 ni 15
+    instagram: "@soy.sofiavitale",
+    header: "",                     // imagen ancha arriba de la página de inicio (opcional)  // aparece en la imagen de la ficha      // 549 + código de área + número, sin 0 ni 15
     titulo: "Propiedades en venta",
     subtitulo: "Fotos, tour en video y visitas por WhatsApp",
     ayudaTitulo: "¿No encontraste lo que buscabas?",
