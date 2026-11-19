@@ -116,3 +116,35 @@ create policy "fotos: admin edita" on storage.objects
   for update using (bucket_id = 'fotos' and public.es_admin());
 create policy "fotos: admin borra" on storage.objects
   for delete using (bucket_id = 'fotos' and public.es_admin());
+
+-- ---------------------------------------------------------------------
+-- 6) Suscriptores del pop-up de novedades (también en suscriptores.sql)
+-- ---------------------------------------------------------------------
+create table if not exists public.suscriptores (
+  id          bigint generated always as identity primary key,
+  email       text not null,
+  interes     text,
+  zona        text,
+  origen      text,
+  created_at  timestamptz not null default now(),
+  constraint suscriptores_email_valido check (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$' and length(email) <= 254),
+  constraint suscriptores_campos_cortos check (
+    coalesce(length(interes), 0) <= 60 and coalesce(length(zona), 0) <= 80 and coalesce(length(origen), 0) <= 80
+  )
+);
+
+-- Un mismo email no se guarda dos veces (sin importar mayúsculas)
+create unique index if not exists suscriptores_email_unico on public.suscriptores (lower(email));
+
+alter table public.suscriptores enable row level security;
+
+drop policy if exists "suscriptores: cualquiera se suscribe" on public.suscriptores;
+drop policy if exists "suscriptores: admin ve"               on public.suscriptores;
+drop policy if exists "suscriptores: admin borra"            on public.suscriptores;
+
+create policy "suscriptores: cualquiera se suscribe" on public.suscriptores
+  for insert to anon, authenticated with check (true);
+create policy "suscriptores: admin ve" on public.suscriptores
+  for select using (public.es_admin());
+create policy "suscriptores: admin borra" on public.suscriptores
+  for delete using (public.es_admin());

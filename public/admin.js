@@ -89,7 +89,7 @@ async function iniciar(){
   try {
     [TODAS, CFGA] = await Promise.all([Store.all(), Config.get()]);
   } catch (err){ console.error(err); toast("No se pudieron cargar los datos: " + err.message); }
-  render(); renderProfile();
+  render(); renderProfile(); cargarSubs();
 }
 async function recargar(){ TODAS = await Store.all(); render(); }
 
@@ -290,8 +290,10 @@ function renderProfile(){
   $('#pf-name').textContent = CFGA.nombre;
 }
 function fillCfg(c){
-  for (const k of ["nombre","rol","whatsapp","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio"]) cfgForm[k].value = c[k] || "";
+  for (const k of ["nombre","rol","whatsapp","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio","legalTexto","legalCorredores"]) cfgForm[k].value = c[k] || "";
   [0,1,2].forEach(i => cfgForm["p"+(i+1)].value = (c.ayudaPuntos||[])[i] || "");
+  cfgForm.popupActivo.checked = c.popupActivo !== false;
+  for (const k of ["popupSegundos","popupTitulo","popupTexto","popupBoton"]) cfgForm[k].value = c[k] ?? "";
   cfgFoto = c.foto || "";
   $('#cfg-av').innerHTML = avHTML(cfgFoto, c.nombre);
 }
@@ -329,6 +331,14 @@ cfgForm.onsubmit = async e=>{
     ayudaPuntos: [d.p1, d.p2, d.p3].map(s=>s.trim()),
     ayudaTituloVacio: d.ayudaTituloVacio.trim() || D.ayudaTituloVacio,
     ayudaTextoVacio: d.ayudaTextoVacio.trim() || D.ayudaTextoVacio,
+    popupActivo: cfgForm.popupActivo.checked,
+    popupSegundos: Math.min(300, Math.max(3, Number(d.popupSegundos) || D.popupSegundos)),
+    popupTitulo: d.popupTitulo.trim() || D.popupTitulo,
+    popupTexto: d.popupTexto.trim() || D.popupTexto,
+    popupBoton: d.popupBoton.trim() || D.popupBoton,
+    // El texto legal es obligatorio: si lo dejan vacío vuelve al original
+    legalTexto: d.legalTexto.trim() || D.legalTexto,
+    legalCorredores: d.legalCorredores.trim() || D.legalCorredores,
   };
   try {
     await conEspera($('#cfg .ed-bar .btn-pri'), "Guardando…", ()=>Config.save(cfg));
@@ -336,8 +346,55 @@ cfgForm.onsubmit = async e=>{
   } catch {}
 };
 
+/* =========================================================
+   SUSCRIPTORES
+   ========================================================= */
+let SUBS = [];
+const fecha = iso => new Date(iso).toLocaleDateString("es-AR", { day:"2-digit", month:"2-digit", year:"numeric" });
+async function cargarSubs(){
+  try { SUBS = await Suscriptores.listar(); }
+  catch (err){ console.error(err); SUBS = []; toast("No se pudo leer la lista. ¿Ejecutaste supabase/suscriptores.sql?"); }
+  $('#subs-n').textContent = SUBS.length ? `(${SUBS.length})` : "";
+}
+function renderSubs(){
+  $('#subs-title').textContent = `Suscriptores (${SUBS.length})`;
+  $('#subs-list').innerHTML = SUBS.length ? SUBS.map(s=>`<div class="sub">
+      <div><b>${esc(s.email)}</b><span>${[s.interes, s.zona, fecha(s.created_at)].filter(Boolean).map(esc).join(" · ")}</span></div>
+      <button class="ib" type="button" data-sub-rm="${s.id}" aria-label="Borrar ${esc(s.email)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>`).join("") : `<p class="empty">Todavía no hay suscriptores.<br>Van a aparecer acá cuando alguien deje su email en la galería.</p>`;
+}
+$('#open-subs').onclick = async ()=>{
+  await cargarSubs(); renderSubs();
+  $('#subs').classList.add('open'); $('#subs').scrollTop = 0; document.body.style.overflow = "hidden";
+};
+function closeSubs(){ $('#subs').classList.remove('open'); document.body.style.overflow = ""; }
+$('#subs-close').onclick = closeSubs;
+$('#subs-list').onclick = async e=>{
+  const b = e.target.closest('[data-sub-rm]'); if (!b) return;
+  const s = SUBS.find(x=>String(x.id)===b.dataset.subRm);
+  if (!s || !confirm(`¿Borrar a ${s.email} de la lista? No se puede deshacer.`)) return;
+  try { await Suscriptores.borrar(s.id); await cargarSubs(); renderSubs(); toast("Suscriptor borrado"); }
+  catch (err){ toast("No se pudo borrar: " + err.message); }
+};
+$('#subs-csv').onclick = ()=>{
+  if (!SUBS.length){ toast("Todavía no hay suscriptores"); return; }
+  const q = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
+  const csv = ["email,interes,zona,origen,fecha", ...SUBS.map(s=>[s.email,s.interes,s.zona,s.origen,fecha(s.created_at)].map(q).join(","))].join("\r\n");
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = `suscriptores-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+};
+$('#subs-copy').onclick = async ()=>{
+  if (!SUBS.length){ toast("Todavía no hay suscriptores"); return; }
+  const txt = SUBS.map(s=>s.email).join(", ");
+  try { await navigator.clipboard.writeText(txt); toast(`${SUBS.length} emails copiados`); }
+  catch { prompt("Copiá los emails:", txt); }
+};
+
 document.addEventListener('keydown', e=>{
   if (e.key !== "Escape") return;
+  if ($('#subs').classList.contains('open')) closeSubs();
   if ($('#editor').classList.contains('open')) closeEditor();
   if ($('#cfg').classList.contains('open')) closeCfg();
 });

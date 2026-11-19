@@ -150,6 +150,10 @@
   .demo-banner{background:#fff4d6;color:#6b4e00;font-size:14px;padding:10px 16px;text-align:center}
   button[disabled]{opacity:.6;cursor:wait}
   .ph.up{display:grid;place-items:center;font-size:12px;color:var(--muted);text-align:center}
+  .sub{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 14px;margin-bottom:8px}
+  .sub div{flex:1;min-width:0}
+  .sub b{display:block;font-size:15px;overflow-wrap:anywhere}
+  .sub span{display:block;font-size:13px;color:var(--muted)}
   .toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;z-index:80;pointer-events:none;white-space:nowrap}
   .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -201,6 +205,11 @@
     <span id="pf-av-mini"></span>
     <span class="info"><b id="pf-name">Tu Nombre</b><span>Mi perfil y textos de la galería</span></span>
     <span class="go">Editar</span>
+  </button>
+  <button class="profile" id="open-subs" type="button" aria-label="Ver suscriptores a las novedades" style="margin-top:8px">
+    <span class="pf-av" aria-hidden="true" style="background:#e1eeea;color:var(--brand)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
+    <span class="info"><b>Suscriptores <span id="subs-n"></span></b><span>Emails del pop-up de novedades</span></span>
+    <span class="go">Ver</span>
   </button>
   <div class="stats" id="stats" role="group" aria-label="Filtrar por estado"></div>
   <div class="search"><input type="search" id="q" placeholder="Buscar por título, barrio o código" aria-label="Buscar"></div>
@@ -317,6 +326,23 @@
   </div></div>
 </div>
 
+<!-- ============ SUSCRIPTORES ============ -->
+<div class="editor" id="subs" role="dialog" aria-modal="true" aria-labelledby="subs-title">
+  <div class="ed-top"><div class="wrap">
+    <button class="ib" id="subs-close" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="subs-title">Suscriptores</h2>
+    <span style="width:40px"></span>
+  </div></div>
+  <div class="wrap" style="padding:16px 16px calc(110px + var(--safe-b))">
+    <p class="hint" style="margin-bottom:12px">Las personas que dejaron su email en el pop-up de novedades. Descargá la lista para cargarla en tu herramienta de email (Mailchimp, Brevo, Gmail…).</p>
+    <div id="subs-list"></div>
+  </div>
+  <div class="ed-bar"><div class="wrap">
+    <button type="button" class="btn btn-ghost" id="subs-copy">Copiar emails</button>
+    <button type="button" class="btn btn-pri" id="subs-csv">Descargar CSV</button>
+  </div></div>
+</div>
+
 <!-- ============ MI PERFIL Y TEXTOS ============ -->
 <div class="editor" id="cfg" role="dialog" aria-modal="true" aria-labelledby="cfg-title">
   <div class="ed-top"><div class="wrap">
@@ -371,6 +397,26 @@
       <div class="grid">
         <div class="full"><label for="c-atv">Título</label><input type="text" id="c-atv" name="ayudaTituloVacio"></div>
         <div class="full"><label for="c-atxv">Texto</label><textarea id="c-atxv" name="ayudaTextoVacio" style="min-height:90px"></textarea><p class="hint">Los 3 puntos y el botón son los mismos del bloque de arriba.</p></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pop-up de novedades por email</legend>
+      <label class="check" style="clear:both"><input type="checkbox" name="popupActivo"> Mostrar el pop-up en la galería</label>
+      <div class="grid" style="margin-top:8px">
+        <div class="full"><label for="c-pseg">Aparece a los (segundos)</label><input type="number" inputmode="numeric" id="c-pseg" name="popupSegundos" min="3" max="300"><p class="hint">También aparece cuando alguien abre su 2.ª propiedad. Se muestra una sola vez por persona.</p></div>
+        <div class="full"><label for="c-ptit">Título</label><input type="text" id="c-ptit" name="popupTitulo"></div>
+        <div class="full"><label for="c-ptx">Texto</label><textarea id="c-ptx" name="popupTexto" style="min-height:80px"></textarea></div>
+        <div class="full"><label for="c-pbtn">Texto del botón</label><input type="text" id="c-pbtn" name="popupBoton"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Texto legal</legend>
+      <p class="hint" style="clear:both;margin-bottom:10px">Se muestra al final de la descripción de cada propiedad y al pie de la galería. Es un requisito legal: revisalo con tu corredor antes de cambiarlo.</p>
+      <div class="grid">
+        <div class="full"><label for="c-legal">Texto</label><textarea id="c-legal" name="legalTexto" style="min-height:160px"></textarea></div>
+        <div class="full"><label for="c-corr">Corredores responsables</label><textarea id="c-corr" name="legalCorredores" style="min-height:80px"></textarea><p class="hint">Uno por línea, con su matrícula.</p></div>
       </div>
     </fieldset>
 

@@ -137,6 +137,33 @@ const Auth = {
   alCambiar(fn) { if (sb) sb.auth.onAuthStateChange((evento, sesion) => fn(evento, sesion)); },
 };
 
+/* ---------------- Suscriptores (pop-up de novedades) ---------------- */
+const Suscriptores = {
+  DEMO_KEY: "suscriptores_demo_v1",
+  // Público: solo puede agregar. Si el email ya estaba, cuenta como éxito.
+  async agregar({ email, interes = "", zona = "", origen = "" }) {
+    const fila = { email: email.trim().toLowerCase(), interes, zona, origen };
+    if (MODO_DEMO) {
+      const list = demo.get(this.DEMO_KEY, []);
+      if (!list.some(x => x.email === fila.email)) list.unshift({ id: Date.now(), created_at: new Date().toISOString(), ...fila });
+      demo.set(this.DEMO_KEY, list); return;
+    }
+    const { error } = await sb.from("suscriptores").insert(fila);
+    if (error && error.code !== "23505") fallo(error);   // 23505 = ya estaba suscripto
+  },
+  // Admin
+  async listar() {
+    if (MODO_DEMO) return demo.get(this.DEMO_KEY, []);
+    const { data, error } = await sb.from("suscriptores").select("id, email, interes, zona, origen, created_at")
+      .order("created_at", { ascending: false });
+    fallo(error); return data;
+  },
+  async borrar(id) {
+    if (MODO_DEMO) { demo.set(this.DEMO_KEY, demo.get(this.DEMO_KEY, []).filter(x => x.id !== id)); return; }
+    const { error } = await sb.from("suscriptores").delete().eq("id", id); fallo(error);
+  },
+};
+
 /* =========================================================
    CONFIG — tu perfil y los textos de la galería (se editan en el panel)
    ========================================================= */
@@ -161,6 +188,15 @@ const Config = {
     // Cuando un filtro no trae resultados. {zona} se reemplaza por la zona o barrio elegido.
     ayudaTituloVacio: "¿No encontraste lo que buscabas?",
     ayudaTextoVacio: "Te ofrezco un servicio de búsqueda integral en {zona}, con acceso a propiedades que todavía no salieron al mercado.",
+    // Pop-up para dejar el email
+    popupActivo: true,
+    popupSegundos: 20,
+    popupTitulo: "Enterate antes que nadie",
+    popupTexto: "Te aviso por email cuando entren propiedades nuevas, desarrollos en pozo y oportunidades.",
+    popupBoton: "Quiero recibir novedades",
+    // Texto legal obligatorio: va al final de cada ficha y al pie de la galería
+    legalTexto: "En cumplimiento de la leyes provinciales vigentes que regulan el corretaje inmobiliario, Ley Nacional 25.028, Ley 22.802 de Lealtad Comercial, Ley 24.240 de Defensa al Consumidor, las normas del Código Civil y Comercial de la Nación y Constitucionales, los agentes NO ejercen el corretaje inmobiliario. Todas las operaciones inmobiliarias son objeto de intermediación y conclusión por parte del corredor colegiado, cuyos datos se exhiben en esta pieza.",
+    legalCorredores: "Fabio Reyes / CUCICBA: 7441\nAguilar Paula Micaela /37010 CMCPD - Tomo III F.715",
   },
   async get() {
     if (MODO_DEMO) return { ...this.DEFAULTS, ...demo.get(this.DEMO_KEY, {}) };
