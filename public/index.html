@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Propiedades en venta</title>
+<meta name="description" content="Galería de propiedades en venta. Fotos, tour en video y consulta directa por WhatsApp.">
+<meta property="og:title" content="Propiedades en venta">
+<meta property="og:description" content="Mirá fotos, tours en video y agendá tu visita por WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f4ef; --surface:#ffffff; --ink:#1d1b18; --muted:#6b655c; --line:#e7e1d7;
+    --brand:#1f3d36; --brand-ink:#ffffff; --accent:#b8895a;
+    --wa:#15803d; --wa-dark:#116632;
+    --sold:#6f6a62; --reserved:#a3611a; --new:#1f3d36;
+    --radius:18px; --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(29,27,24,.07);
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);font:16px/1.5 Hind,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  a{color:inherit}
+  .wrap{max-width:560px;margin:0 auto}
+  .serif{font-family:Hind,sans-serif}
+
+  /* ---------- Header ---------- */
+  .hero{padding:28px 16px 12px;text-align:center}
+  .avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 10px;background:var(--brand);color:#fff;display:grid;place-items:center;font:700 26px Hind,sans-serif;box-shadow:0 0 0 4px var(--surface),0 0 0 5px var(--line)}
+  .hero h1{font:700 26px/1.15 Hind,sans-serif;letter-spacing:-.01em}
+  .hero p{color:var(--muted);font-size:15px;margin-top:4px}
+
+  /* ---------- Filtros ---------- */
+  .filters{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
+  .filters.stuck{border-color:var(--line)}
+  .chips{display:grid;gap:6px;padding:10px 16px 0}
+  .chips.tipo{display:flex;flex-wrap:wrap}
+  .chips.tipo .chip{flex:1 1 auto;padding:0 10px;overflow:visible}
+  .badge.pozo{background:#1d1b18;color:#fff}
+  /* Pozo: avance de obra y unidades */
+  .progress{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:8px}
+  .progress i{display:block;height:100%;background:var(--brand);border-radius:999px}
+  .prog-lbl{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+  .prog-lbl b{color:var(--ink)}
+  .units{display:grid;gap:8px}
+  .unit{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 12px 14px}
+  .unit b{display:block;font-size:16px}
+  .unit span{display:block;font-size:14px;color:var(--muted)}
+  .unit a{flex:none;min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:12px;border:1.5px solid var(--brand);color:var(--brand);font-weight:600;font-size:14px;text-decoration:none}
+  .fin-box{background:#eef3f1;border-radius:14px;padding:12px 14px;font-size:15px;color:var(--ink)}
+  /* Barra: botón Filtros + Ordenar */
+  .toolbar{display:flex;gap:8px;padding:8px 16px 10px}
+  .fbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:12px;border:1.5px solid var(--ink);background:var(--surface);font-weight:600;font-size:15px}
+  .fbtn svg{width:18px;height:18px}
+  .fcount{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--brand);color:#fff;font-size:13px;display:grid;place-items:center}
+  .fcount[hidden]{display:none}
+  .toolbar .sort{flex:1}
+  .toolbar .sort select{width:100%}
+  /* Filtros aplicados (se quitan con la ×) */
+  .active-f{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+  .active-f:empty{display:none}
+  .af{display:flex;align-items:center;gap:6px;min-height:36px;padding:0 6px 0 12px;border-radius:999px;background:#e6eeeb;color:var(--brand);font-size:14px;font-weight:600}
+  .af span{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:18px;line-height:1}
+  .af-clear{min-height:36px;padding:0 8px;font-size:14px;font-weight:600;color:var(--brand);text-decoration:underline}
+  /* Hoja de filtros */
+  .fsheet-body{padding-bottom:8px}
+  .fsec{padding:14px 0;border-top:1px solid var(--line)}
+  .fsec:first-of-type{border-top:0}
+  .fsec h4{font-size:16px;font-weight:700;margin-bottom:10px}
+  .opts-wrap{display:flex;flex-wrap:wrap;gap:8px}
+  .opts-wrap button{flex:1 1 auto;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);font-size:15px;font-weight:500;background:#fff}
+  .opts-wrap button[aria-pressed="true"]{border-color:var(--brand);background:#eef3f1;color:var(--brand);font-weight:600}
+  .sel-wrap{position:relative}
+  .flbl{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+  .sel-wrap select:disabled{background:var(--bg);color:var(--muted)}
+  .sel-wrap select{appearance:none;-webkit-appearance:none;padding-right:40px;font-weight:500}
+  .sel-wrap svg{position:absolute;right:12px;top:50%;width:18px;height:18px;transform:translateY(-50%);pointer-events:none}
+  .empty-reset{display:block;margin:10px auto 0}
+  .range{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+  .range label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+  .fsheet-foot{position:sticky;bottom:calc(-20px - var(--safe-b));background:var(--surface);display:flex;gap:10px;padding:12px 0 calc(4px + var(--safe-b));border-top:1px solid var(--line);margin-top:4px}
+  .fsheet-foot .btn{flex:1}
+  .btn-pri{background:var(--brand);color:#fff}
+  .chip{min-width:0;min-height:44px;padding:0 6px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+  .chips.extra .chip[aria-pressed="true"]{background:#e6eeeb;color:var(--brand);border-color:var(--brand)}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 16px 0}
+  .count{color:var(--muted);font-size:14px}
+  .count b{color:var(--ink)}
+  .sort{position:relative;flex:none}
+  .sort select{appearance:none;-webkit-appearance:none;min-height:44px;padding:0 34px 0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font:500 14px Hind,sans-serif;color:var(--ink)}
+  .sort svg{position:absolute;right:10px;top:50%;width:16px;height:16px;transform:translateY(-50%);pointer-events:none}
+
+  /* ---------- Tarjetas ---------- */
+  .list{display:grid;gap:18px;padding:12px 16px calc(40px + var(--safe-b))}
+  .card{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s}
+  .card:active{transform:scale(.99)}
+  /* Velo gris para Reservada / Vendida */
+  .st-reservada .slides img,.st-vendida .slides img{filter:grayscale(1) brightness(.92) contrast(.9)}
+  .veil{position:absolute;inset:0;display:grid;place-items:center;background:rgba(38,36,33,.38);pointer-events:none;z-index:1}
+  .veil span{padding:8px 18px;border:2px solid rgba(255,255,255,.95);border-radius:10px;color:#fff;font:700 15px Hind,sans-serif;letter-spacing:.2em;text-transform:uppercase;background:rgba(0,0,0,.18)}
+  .st-vendida .veil{background:rgba(38,36,33,.5)}
+  .media .badges,.media .tour,.media .counter,.gallery .badges,.gallery .counter,.gallery .play-cta{z-index:2}
+  .media{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#ddd5c8,#c9bfae)}
+  .slides{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .slides::-webkit-scrollbar{display:none}
+  .slides img{flex:none;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
+  .slides img.err{visibility:hidden}
+  .badges{position:absolute;top:12px;left:12px;display:flex;gap:6px}
+  .badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,.94);color:var(--ink)}
+  .badge.new{background:var(--new);color:#fff}
+  .badge.reserved{background:var(--reserved);color:#fff}
+  .badge.sold{background:var(--sold);color:#fff}
+  .tour{position:absolute;bottom:10px;left:62px;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(20,20,20,.62);color:#fff;backdrop-filter:blur(4px)}
+  .counter{position:absolute;bottom:10px;right:12px;padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(20,20,20,.55);color:#fff}
+  .photos-n{position:absolute;bottom:10px;left:12px;display:flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(20,20,20,.6);color:#fff;z-index:2}
+  .photos-n svg{width:13px;height:13px}
+  .badge.credit{background:#fff;color:var(--brand)}
+  .badge.tag{background:#7a4f24;color:#fff}
+  .badges{flex-wrap:wrap;right:64px}
+  /* Guardar (corazón) */
+  .fav{position:absolute;top:10px;right:10px;z-index:4;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.22)}
+  .fav svg,.iconbtn.heart svg{width:22px;height:22px;fill:none;stroke:#1d1b18;stroke-width:2;transition:transform .15s}
+  .fav[aria-pressed="true"] svg,.iconbtn.heart[aria-pressed="true"] svg{fill:#e0245e;stroke:#e0245e}
+  .fav:active svg,.iconbtn.heart:active svg{transform:scale(.85)}
+  .favbtn{flex:none;display:flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:15px}
+  .favbtn svg{width:20px;height:20px;fill:none;stroke:#1d1b18;stroke-width:2}
+  .favbtn[aria-pressed="true"]{border-color:#e0245e;background:#fdecf2;color:#b3134a}
+  .favbtn[aria-pressed="true"] svg,.favbtn.has svg{fill:#e0245e;stroke:#e0245e}
+  /* Comparar */
+  .cmp-tg{display:flex;align-items:center;gap:8px;min-height:44px;font-size:15px;font-weight:600;color:var(--ink);padding-right:6px}
+  .cmp-tg i{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;flex:none}
+  .cmp-tg[aria-pressed="true"] i{background:var(--brand);border-color:var(--brand)}
+  .cmp-tg[aria-pressed="true"] i::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+  .cmp-bar{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--ink);color:#fff;padding:10px 16px calc(10px + var(--safe-b));transform:translateY(110%);transition:transform .25s}
+  .cmp-bar.show{transform:none}
+  body.is-detail .cmp-bar{display:none}
+  .cmp-bar .wrap{display:flex;align-items:center;gap:10px}
+  .cmp-bar p{flex:1;font-size:15px;line-height:1.25}
+  .cmp-bar p small{display:block;color:#cfc9bf;font-size:13px}
+  .cmp-bar button{min-height:44px;border-radius:12px;padding:0 14px;font-weight:600;font-size:15px}
+  .cmp-bar .go{background:#fff;color:var(--ink)}
+  .cmp-bar .go[disabled]{opacity:.45}
+  .cmp-bar .clr{color:#fff;text-decoration:underline;padding:0 6px}
+  body.has-cmp .list{padding-bottom:calc(110px + var(--safe-b))}
+  /* Pantalla de comparación */
+  .cmp-view{position:fixed;inset:0;z-index:66;background:var(--bg);overflow-y:auto;display:none}
+  .cmp-view.open{display:block}
+  .cmp-top{position:sticky;top:0;z-index:2;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px}
+  .cmp-top h2{font:700 19px Hind,sans-serif}
+  .cmp-top .iconbtn{box-shadow:none;border:1px solid var(--line);flex:none}
+  .cmp-body{padding:12px 16px calc(100px + var(--safe-b))}
+  .cmp-grid{display:grid;gap:8px}
+  .cmp-head{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}
+  .cmp-head img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#ddd5c8;display:block}
+  .cmp-head div{padding:8px}
+  .cmp-head b{display:block;font-size:15px;line-height:1.2}
+  .cmp-head span{display:block;font-size:12px;color:var(--muted);line-height:1.3;margin-top:2px}
+  .cmp-head .x{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:18px;line-height:1}
+  .cmp-row{padding:10px 0;border-bottom:1px solid var(--line)}
+  .cmp-lbl{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  .cmp-vals div{font-size:15px;line-height:1.3;min-width:0;overflow-wrap:break-word;hyphens:auto;padding:4px 6px;border-radius:8px}
+  .cmp-vals div.best{background:#e6eeeb;color:var(--brand);font-weight:700}
+  .cmp-links a,.cmp-links button{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:1.5px solid var(--brand);color:var(--brand);font-weight:600;font-size:14px;text-decoration:none;background:#fff}
+  .cmp-note{font-size:13px;color:var(--muted);margin:10px 0 0}
+  .cmp-cta{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + var(--safe-b))}
+  .cmp-cta .btn{width:100%}
+  /* Banda diagonal "Nuevo ingreso": amarillo + texto oscuro + bordes y sombra,
+     así se lee igual sobre fotos claras u oscuras */
+  .media{overflow:hidden}
+  .ribbon{position:absolute;top:26px;left:-42px;width:170px;transform:rotate(-45deg);background:#ffd21f;color:#1d1b18;text-align:center;font:700 11px/1 Hind,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:8px 0 6px;border-top:1.5px solid rgba(20,18,15,.55);border-bottom:1.5px solid rgba(20,18,15,.55);box-shadow:0 0 0 1px rgba(255,255,255,.35),0 3px 10px rgba(0,0,0,.45);z-index:3;pointer-events:none}
+  .badges.has-ribbon{left:92px}
+  .badge.yellow{background:#ffd21f;color:#1d1b18;box-shadow:0 0 0 1.5px rgba(20,18,15,.55),0 2px 8px rgba(0,0,0,.35)}
+  .body{padding:14px 16px 14px}
+  .price{font:700 24px/1.1 Hind,sans-serif;letter-spacing:-.01em}
+  /* Qué es, antes del precio: "PH · 2 ambientes · Palermo" */
+  .kind{font-size:15px;font-weight:600;color:var(--brand);line-height:1.3;margin-bottom:4px}
+  .kind span{color:var(--ink);font-weight:600}
+  .exp{color:var(--muted);font-size:14px;margin-top:3px}
+  .feats{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:14px}
+  .feats span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .feats svg{width:17px;height:17px;stroke:var(--brand);flex:none}
+  .addr{margin-top:12px;font-weight:600;line-height:1.3}
+  .addr small{display:block;font-weight:400;color:var(--muted);font-size:14px;margin-top:1px}
+  .title{margin-top:8px;font-weight:500;line-height:1.35}
+  .snippet{color:var(--muted);font-size:14px;line-height:1.45;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .card-foot .cod{font-size:13px;color:var(--muted)}
+  .wa-mini{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:var(--wa);color:#fff;font-weight:600;font-size:15px;text-decoration:none;flex:none}
+  .wa-mini svg{width:18px;height:18px}
+  .wa-mini.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line)}
+
+  /* ---------- Skeleton ---------- */
+  .sk{background:linear-gradient(90deg,#ece6dc 25%,#f4f0e9 50%,#ece6dc 75%);background-size:200% 100%;animation:sh 1.2s infinite}
+  @keyframes sh{to{background-position:-200% 0}}
+
+  /* ---------- Detalle ---------- */
+  #detail{display:none;padding-bottom:calc(96px + var(--safe-b))}
+  body.is-detail #list-view{display:none}
+  body.is-detail #detail{display:block}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;justify-content:space-between;padding:12px 16px;pointer-events:none}
+  .topbar .wrap{display:flex;justify-content:space-between;width:100%}
+  .iconbtn{pointer-events:auto;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .iconbtn svg{width:22px;height:22px}
+  .gallery{position:relative;aspect-ratio:4/3.3;background:linear-gradient(135deg,#ddd5c8,#c9bfae)}
+  .gallery .slides img{cursor:zoom-in}
+  .play-cta{position:absolute;left:16px;bottom:14px;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 8px;border-radius:999px;background:#fff;font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .play-cta i{width:30px;height:30px;border-radius:50%;background:var(--brand);display:grid;place-items:center}
+  .play-cta i svg{width:12px;height:12px;fill:#fff;margin-left:2px}
+  .d-head{padding:18px 16px 8px}
+  .op{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .d-head .price{font-size:32px;margin-top:2px}
+  .price-sub{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--muted);font-size:14px;margin-top:6px}
+  .d-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .d-tags span{padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600;background:#e6eeeb;color:var(--brand)}
+  .d-head h2{font:700 20px/1.3 Hind,sans-serif;margin-top:16px}
+  .d-head .loc{color:var(--ink);font-size:15px;margin-top:6px;display:flex;align-items:flex-start;gap:6px}
+  .d-head .loc svg{flex:none;margin-top:3px}
+  .d-head .loc small{display:block;color:var(--muted);font-size:14px}
+  .pub{font-size:13px;color:var(--muted);margin-top:8px}
+  .ficha{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 16px 16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .ficha div{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);min-width:0}
+  .ficha div:nth-child(odd){border-right:1px solid var(--line)}
+  .ficha div:nth-last-child(-n+2){border-bottom:0}
+  .ficha svg{width:22px;height:22px;stroke:var(--brand);flex:none}
+  .ficha b{display:block;font-size:15px;line-height:1.2}
+  .ficha span{display:block;font-size:12px;color:var(--muted)}
+  .sims{display:grid;gap:10px}
+  .sim{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:44px}
+  .sim img{width:84px;height:68px;border-radius:10px;object-fit:cover;flex:none;background:#ddd5c8}
+  .sim b{display:block;font:700 17px Hind,sans-serif}
+  .sim span{display:block;font-size:13px;color:var(--muted)}
+  .section{padding:8px 16px 16px}
+  .section h3{font:700 19px Hind,sans-serif;margin-bottom:8px}
+  .desc{color:#3b3731;white-space:pre-line}
+  .desc.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .more{margin-top:6px;font-weight:600;color:var(--brand);min-height:44px;text-decoration:underline;text-underline-offset:3px}
+  .amen{display:flex;flex-wrap:wrap;gap:8px}
+  .amen span{padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:14px}
+  .map{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);aspect-ratio:16/10;background:#e9e4da}
+  .map iframe{width:100%;height:100%;border:0}
+  .note{font-size:13px;color:var(--muted);margin-top:6px}
+  .agent{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .agent .avatar{width:48px;height:48px;font-size:18px;margin:0;box-shadow:none}
+  .agent b{display:block}
+  .agent span{font-size:14px;color:var(--muted)}
+
+  /* ---------- Barra CTA fija ---------- */
+  .cta{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + var(--safe-b));box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+  .cta .wrap{display:flex;gap:10px}
+  .btn{min-height:52px;border-radius:14px;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+  .btn-wa{flex:1.6;background:var(--wa);color:#fff}
+  .btn-wa:active{background:var(--wa-dark)}
+  .btn-sec{flex:1;background:var(--surface);border:1.5px solid var(--ink)}
+  .btn svg{width:20px;height:20px}
+  .btn[disabled]{background:#cfc9bf;color:#fff;border-color:#cfc9bf}
+
+  /* ---------- Bottom sheet & modales ---------- */
+  .scrim{position:fixed;inset:0;z-index:50;background:rgba(20,18,15,.5);opacity:0;pointer-events:none;transition:opacity .2s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--surface);border-radius:22px 22px 0 0;padding:10px 16px calc(20px + var(--safe-b));transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);max-width:560px;margin:0 auto}
+  .sheet.open{transform:none}
+  .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+  .sheet h3{font:700 21px Hind,sans-serif}
+  .sheet p{color:var(--muted);font-size:14px;margin:4px 0 14px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .opt{min-height:56px;border-radius:14px;border:1.5px solid var(--line);font-weight:500;font-size:15px;line-height:1.2}
+  .opt small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+  .opt[aria-pressed="true"]{border-color:var(--brand);background:#eef3f1}
+  .sheet .btn-wa{width:100%}
+  /* Bloque "Te ayudo a encontrar tu propiedad" */
+  .helper{margin:4px 16px 16px;background:var(--brand);color:#fff;border-radius:18px;padding:20px 18px;display:flex;flex-direction:column;gap:10px}
+  .helper-top{display:flex;gap:12px;align-items:center}
+  .helper .avatar{width:48px;height:48px;font-size:18px;margin:0;box-shadow:0 0 0 2px rgba(255,255,255,.35);background:#fff;color:var(--brand);flex:none}
+  .helper h3{font:700 20px/1.2 Hind,sans-serif;margin:0}
+  .helper p{font-size:15px;line-height:1.45;color:#e3ece8}
+  .helper ul{list-style:none;display:grid;gap:6px;font-size:14px;color:#e3ece8}
+  .helper li{display:flex;gap:8px;align-items:flex-start}
+  .helper li svg{width:18px;height:18px;flex:none;margin-top:1px}
+  .helper .btn{background:#fff;color:var(--brand);margin-top:4px}
+  .list .helper{margin:4px 0 0}
+  .helper .btn svg{width:20px;height:20px}
+  .avatar-img{object-fit:cover;display:block}
+  .helper .helper-photo{width:64px;height:64px;font-size:22px;box-shadow:0 0 0 3px #fff}
+  .helper-who{display:block;font-size:14px;color:#cfe0d9;margin-top:2px}
+  .helper-alt{min-height:44px;color:#fff;font-size:15px;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+  /* Hoja de búsqueda */
+  .sheet.tall{max-height:92vh;overflow-y:auto}
+  .fgroup{margin-bottom:14px}
+  .fgroup>label,.fgroup>span{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+  .seg-opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .seg-opts button{min-height:44px;border-radius:12px;border:1.5px solid var(--line);font-size:14px;font-weight:500;min-width:0}
+  .seg-opts.wrap-opts{display:flex;flex-wrap:wrap}
+  .seg-opts.wrap-opts button{flex:1 1 auto;padding:0 10px}
+  .seg-opts button[aria-pressed="true"]{border-color:var(--brand);background:#eef3f1;color:var(--brand);font-weight:600}
+  .finput{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;font:16px Hind,sans-serif;background:#fff;color:var(--ink)}
+  .finput:focus{outline:none;border-color:var(--brand)}
+  .share-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:6px}
+  .sh{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:84px;padding:8px 2px;border-radius:14px;font-size:13px;font-weight:500;text-decoration:none;color:var(--ink)}
+  .sh:active{background:var(--bg)}
+  .sh i{width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
+  .sh svg{width:26px;height:26px}
+  /* Logos actuales de cada red */
+  .sh i.lg-wa{background:#25D366}
+  .sh i.lg-wa svg{width:30px;height:30px}
+  .sh i.lg-fb{background:none;overflow:hidden}
+  .sh i.lg-fb svg{width:52px;height:52px}
+  .sh i.lg-ig{border-radius:15px;background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%)}
+  .sh i.lg-ig svg{width:30px;height:30px}
+  .modal{position:fixed;inset:0;z-index:70;background:#000;display:none;flex-direction:column;justify-content:center}
+  .modal.open{display:flex}
+  .modal video,.modal img{width:100%;max-height:85vh;object-fit:contain}
+  .modal .iconbtn{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:16px}
+  .toast{position:fixed;left:50%;bottom:calc(100px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;z-index:80;pointer-events:none}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .empty{text-align:center;padding:40px 16px;color:var(--muted)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= LISTADO ================= -->
+<main id="list-view" class="wrap">
+  <header class="hero" id="hero"></header>
+
+  <nav class="filters" id="filters" aria-label="Filtrar propiedades">
+    <div class="chips tipo" id="chips-tipo" role="group" aria-label="Tipo de propiedad"></div>
+    <div class="toolbar">
+      <button class="fbtn" id="open-filtros" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Filtros<span class="fcount" id="fcount" hidden></span>
+      </button>
+      <button class="favbtn" id="ver-favs" type="button" aria-pressed="false" aria-label="Ver solo las guardadas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.3 4.5 6.8 4.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.5 0 5.4 3.5 4.1 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg><span id="fav-n">0</span>
+      </button>
+      <label class="sort">
+      <span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Ordenar por</span>
+      <select id="sort">
+        <option value="rel">Destacadas</option>
+        <option value="new">Más recientes</option>
+        <option value="asc">Menor precio</option>
+        <option value="desc">Mayor precio</option>
+      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </label>
+    </div>
+    <div class="active-f" id="active-f" aria-label="Filtros aplicados"></div>
+  </nav>
+  <div class="bar"><p class="count" id="count" aria-live="polite"></p></div>
+  <section class="list" id="list" aria-label="Listado de propiedades"></section>
+</main>
+
+<!-- ================= DETALLE ================= -->
+<article id="detail" class="wrap" aria-live="polite"></article>
+
+<!-- Bottom sheet: agendar visita -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="grab"></div>
+  <h3 id="sheet-title">¿Cuándo te queda mejor?</h3>
+  <p>Lo sumamos al mensaje para coordinar más rápido.</p>
+  <div class="opts" id="opts">
+    <button class="opt" data-v="por la mañana">Mañana<small>9 a 13 h</small></button>
+    <button class="opt" data-v="por la tarde">Tarde<small>14 a 19 h</small></button>
+    <button class="opt" data-v="el fin de semana">Fin de semana<small>Sáb / Dom</small></button>
+    <button class="opt" data-v="">Me da igual<small>Coordinamos</small></button>
+  </div>
+  <a class="btn btn-wa" id="sheet-go" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.4.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.1Z"/></svg>
+    Enviar por WhatsApp
+  </a>
+</div>
+
+<!-- Bottom sheet: filtros -->
+<div class="sheet tall" id="filtros-sheet" role="dialog" aria-modal="true" aria-labelledby="filtros-title">
+  <div class="grab"></div>
+  <h3 id="filtros-title">Filtros</h3>
+  <div class="fsheet-body">
+    <section class="fsec" id="fs-ubic-sec"><h4>Ubicación</h4>
+      <label class="flbl" for="fs-zona">Provincia o zona</label>
+      <div class="sel-wrap"><select class="finput" id="fs-zona"></select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      <label class="flbl" for="fs-barrio" style="margin-top:10px">Barrio o localidad</label>
+      <div class="sel-wrap"><select class="finput" id="fs-barrio"></select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+    </section>
+    <section class="fsec">
+      <h4>Precio (USD)</h4>
+      <div class="range">
+        <div><label for="fs-pmin">Desde</label><input class="finput" id="fs-pmin" type="text" inputmode="numeric" placeholder="Mínimo" autocomplete="off"></div>
+        <div><label for="fs-pmax">Hasta</label><input class="finput" id="fs-pmax" type="text" inputmode="numeric" placeholder="Máximo" autocomplete="off"></div>
+      </div>
+    </section>
+    <section class="fsec"><h4>Ambientes</h4><div class="opts-wrap" id="fs-amb" role="group" aria-label="Ambientes">
+      <button type="button" data-v="1">Mono</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4+</button>
+    </div></section>
+    <section class="fsec"><h4>Dormitorios</h4><div class="opts-wrap" id="fs-dorm" role="group" aria-label="Dormitorios">
+      <button type="button" data-v="1">1+</button><button type="button" data-v="2">2+</button><button type="button" data-v="3">3+</button>
+    </div></section>
+    <section class="fsec"><h4>Características</h4><div class="opts-wrap" id="fs-car" role="group" aria-label="Características">
+      <button type="button" data-v="cochera">Cochera</button><button type="button" data-v="credito">Apto crédito</button><button type="button" data-v="estrenar">A estrenar</button>
+    </div></section>
+  </div>
+  <div class="fsheet-foot">
+    <button class="btn btn-sec" id="fs-clear" type="button">Limpiar</button>
+    <button class="btn btn-pri" id="fs-apply" type="button">Ver propiedades</button>
+  </div>
+</div>
+
+<!-- Bottom sheet: búsqueda personalizada -->
+<div class="sheet tall" id="busca-sheet" role="dialog" aria-modal="true" aria-labelledby="busca-title">
+  <div class="grab"></div>
+  <h3 id="busca-title">¿Qué estás buscando?</h3>
+  <p>Contame lo básico y te mando opciones por WhatsApp, incluso las que no están publicadas acá.</p>
+  <div class="fgroup"><span id="bt-l">Tipo</span>
+    <div class="seg-opts wrap-opts" id="b-tipo" role="group" aria-labelledby="bt-l">
+      <button type="button" data-v="Departamento">Depto</button>
+      <button type="button" data-v="Casa">Casa</button>
+      <button type="button" data-v="PH">PH</button>
+      <button type="button" data-v="Pozo">Desarrollos</button>
+      <button type="button" data-v="Otro">Otro</button>
+    </div>
+  </div>
+  <div class="fgroup"><span id="ba-l">Ambientes</span>
+    <div class="seg-opts" id="b-amb" role="group" aria-labelledby="ba-l">
+      <button type="button" data-v="1">1</button>
+      <button type="button" data-v="2">2</button>
+      <button type="button" data-v="3">3</button>
+      <button type="button" data-v="4">4+</button>
+    </div>
+  </div>
+  <div class="fgroup"><label for="b-zona">Zona o barrios</label><input class="finput" id="b-zona" type="text" placeholder="Ej: Palermo, Belgrano" autocomplete="off"></div>
+  <div class="fgroup"><label for="b-max">Presupuesto hasta (USD)</label><input class="finput" id="b-max" type="text" inputmode="numeric" placeholder="Ej: 150.000" autocomplete="off"></div>
+  <a class="btn btn-wa" id="busca-go" target="_blank" rel="noopener" style="width:100%">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.4.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.1Z"/></svg>
+    Enviar búsqueda por WhatsApp
+  </a>
+  <p class="note" style="text-align:center;margin-top:8px">Todos los campos son opcionales.</p>
+</div>
+
+<!-- Bottom sheet: compartir -->
+<div class="sheet" id="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">
+  <div class="grab"></div>
+  <h3 id="share-title">Compartir propiedad</h3>
+  <p id="share-sub">Mandásela a alguien o publicala.</p>
+  <div class="share-grid">
+    <a class="sh" id="sh-wa" target="_blank" rel="noopener">
+      <i class="lg-wa"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.4.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.1Z"/></svg></i>
+      WhatsApp
+    </a>
+    <a class="sh" id="sh-fb" target="_blank" rel="noopener">
+      <i class="lg-fb"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="18" fill="#0866FF"/><path fill="#fff" d="M15.3 37V23.4h-4.1v-4.9h4.1v-3.6c0-4.1 2.4-6.4 6.2-6.4 1.8 0 3.6.3 3.6.3v4h-2c-2 0-2.6 1.2-2.6 2.5v3.2h4.5l-.7 4.9h-3.8V37z"/></svg></i>
+      Facebook
+    </a>
+    <button class="sh" id="sh-ig" type="button">
+      <i class="lg-ig"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="#fff" stroke="none"/></svg></i>
+      Instagram
+    </button>
+    <button class="sh" id="sh-copy" type="button">
+      <i style="background:#4a453d"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></i>
+      Copiar link
+    </button>
+  </div>
+  <button class="more" id="sh-more" type="button" hidden style="width:100%">Más opciones…</button>
+</div>
+
+<!-- Modal video / zoom -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Visor">
+  <button class="iconbtn" id="modal-close" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <div id="modal-body"></div>
+</div>
+
+<!-- Barra inferior: propiedades elegidas para comparar -->
+<div class="cmp-bar" id="cmp-bar" aria-live="polite">
+  <div class="wrap">
+    <p id="cmp-txt"></p>
+    <button class="clr" type="button" id="cmp-clear">Quitar</button>
+    <button class="go" type="button" id="cmp-go">Comparar</button>
+  </div>
+</div>
+
+<!-- Pantalla de comparación -->
+<div class="cmp-view" id="cmp-view" role="dialog" aria-modal="true" aria-labelledby="cmp-title">
+  <div class="cmp-top">
+    <button class="iconbtn" type="button" id="cmp-close" aria-label="Cerrar comparación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h2 id="cmp-title">Comparar propiedades</h2>
+  </div>
+  <div class="cmp-body" id="cmp-body"></div>
+  <div class="cmp-cta"><div class="wrap"><a class="btn btn-wa" id="cmp-wa" target="_blank" rel="noopener"></a></div></div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="store.js"></script>
+<script>
+/* =========================================================
+   CONFIGURACIÓN
+   ========================================================= */
+// Tu nombre, foto, WhatsApp y los textos se editan en el panel → "Mi perfil y textos" (ver Config en store.js)
+let CFG = { ...Config.DEFAULTS };   // se reemplaza por lo guardado en Supabase al cargar
+const WA = () => String(CFG.whatsapp || "").replace(/\D/g, "");
+// Tu foto (o tus iniciales si todavía no subiste una)
+const avatar = (cls = "avatar") => CFG.foto
+  ? `<img class="${cls} avatar-img" src="${CFG.foto}" alt="${CFG.nombre}">`
+  : `<div class="${cls}" aria-hidden="true">${Config.iniciales(CFG.nombre)}</div>`;
+function renderHero(){
+  $('#hero').innerHTML = `${avatar()}<h1>${CFG.titulo}</h1><p>${CFG.subtitulo}</p>`;
+}
+
+let PROPIEDADES = [];   // se cargan desde Supabase al iniciar
+
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const fmt = n => new Intl.NumberFormat("es-AR").format(n);
+const precio = p => `${p.moneda} ${fmt(p.precio)}`;
+const ICON = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v13M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>',
+  play:'<svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>',
+  pin:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  amb:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h9V3"/></svg>',
+  m2:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 20 20 4M4 14v6h6M20 10V4h-6"/></svg>',
+  bed:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 18V7M3 13h18v5M21 13a3 3 0 0 0-3-3h-7v3"/><circle cx="7" cy="10.5" r="1.5"/></svg>',
+  bath:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 12h16v3a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM6 12V5a2 2 0 0 1 4 0"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M5 16V11l2-5h10l2 5v5M3 16h18v3H3z"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>',
+  age:'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  wa:$('#sheet-go svg').outerHTML,
+};
+ICON.cam = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+ICON.dir = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v18M5 8h11l3 3-3 3H5z"/></svg>';
+ICON.fin = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/></svg>';
+ICON.obra = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>';
+
+/* ---- Desarrollos en pozo ---- */
+const isPozo = p => p.tipo === "Desarrollo en pozo";
+const ambTexto = p => {
+  if (isPozo(p) && p.ambMax > p.ambientes) return `${p.ambientes} a ${p.ambMax} ambientes`;
+  return p.ambientes === 1 ? "Monoambiente" : p.ambientes ? `${p.ambientes} ambientes` : "";
+};
+const m2Rango = p => {
+  const t = p.pozo?.tipologias || [];
+  if (!t.length) return `${p.m2} m²`;
+  const min = Math.min(...t.map(x=>x.m2)), max = Math.max(...t.map(x=>x.m2));
+  return min === max ? `${min} m²` : `${min} a ${max} m²`;
+};
+const precioTxt = p => (isPozo(p) ? "Desde " : "") + precio(p);
+
+// "PH · 2 ambientes · Palermo"  /  "Desarrollo en pozo · 1 a 3 ambientes · Núñez"
+const kind = p => [p.tipo, ambTexto(p), p.barrio].filter(Boolean)
+  .map((t,i)=> i ? `<span>${t}</span>` : t).join('<span> · </span>');
+const textoKind = p => kind(p).replace(/<[^>]+>/g, "");
+const RIBBON ='<span class="ribbon">Nuevo ingreso</span>';
+// Etiquetas sobre la foto. En la tarjeta "Nuevo ingreso" va como banda en la esquina (ribbon);
+// en la ficha va como etiqueta amarilla, porque esa esquina la ocupa el botón de volver.
+const badges = (p, conNuevo = false) => {
+  if (p.estado === "vendida") return "";
+  return (conNuevo && p.estado === "nueva" ? '<span class="badge yellow">Nuevo ingreso</span>' : "")
+    + (isPozo(p) ? '<span class="badge pozo">En pozo</span>' : "")
+    + (p.etiqueta ? `<span class="badge tag">${p.etiqueta}</span>` : "")
+    + (p.aptoCredito ? '<span class="badge credit">Apto crédito</span>' : "");
+};
+const precioM2 = p => p.m2 && p.moneda==="USD" ? `USD ${fmt(Math.round(p.precio / p.m2))}/m²` : "";
+function hace(iso){
+  if (!iso) return "";
+  const d = Math.floor((Date.now() - new Date(iso + "T12:00:00")) / 864e5);
+  if (d <= 0) return "Publicado hoy";
+  if (d === 1) return "Publicado ayer";
+  if (d < 30) return `Publicado hace ${d} días`;
+  const m = Math.floor(d / 30); return `Publicado hace ${m} ${m === 1 ? "mes" : "meses"}`;
+}
+// Línea de características como en los portales: superficie, ambientes, dormitorios, baños, cochera
+function feats(p){
+  const f = [];
+  if (isPozo(p)){
+    f.push(["m2", m2Rango(p)]);
+    if (p.cochera) f.push(["car", "Cocheras"]);
+    if (p.pozo?.financiacion) f.push(["fin", "Financiación"]);
+    return f.map(([i, t]) => `<span>${ICON[i]}${t}</span>`).join("");
+  }
+  if (p.m2) f.push(["m2", `${p.m2} m² tot.`]);
+  if (p.dormitorios) f.push(["bed", `${p.dormitorios} dorm.`]);
+  if (p.banos) f.push(["bath", `${p.banos} ${p.banos > 1 ? "baños" : "baño"}`]);
+  if (p.cochera) f.push(["car", "Cochera"]);
+  return f.map(([i, t]) => `<span>${ICON[i]}${t}</span>`).join("");
+}
+const veil = e => ({reservada:'<div class="veil"><span>Reservada</span></div>', vendida:'<div class="veil"><span>Vendida</span></div>'}[e] || "");
+
+// Link público de una propiedad. Usa ?p= (no #) porque Facebook y otras redes descartan lo que va después del #.
+const linkDe = p => `${location.origin}${location.pathname}?p=${encodeURIComponent(p.codigo)}`;
+function waLink(p, tipo, franja="", unidad=null){
+  const base = isPozo(p)
+    ? `desarrollo en pozo en ${p.barrio} (cód. ${p.codigo}, desde ${precio(p)})`
+    : `${p.tipo} de ${p.ambientes} amb. en ${p.barrio} (cód. ${p.codigo}, ${precio(p)})`;
+  const MSG = {
+    info:     `Hola! Me interesa el ${base}. ¿Me pasás plantas, precios y financiación?`,
+    unidad:   unidad ? `Hola! Me interesa ${/^mono/i.test(unidad.amb) ? "el monoambiente" : `la unidad de ${unidad.amb}`} (${unidad.m2} m², desde USD ${fmt(unidad.precio)}) del ${base}. ¿Me pasás más info?` : "",
+    visita:   `Hola! Me interesa el ${base}. Quisiera agendar una visita${franja ? " " + franja : ""}.`,
+    consulta: `Hola! Tengo una consulta sobre el ${base}.`,
+    libera:   `Hola! Vi que el ${base} está reservado. ¿Me avisás si se libera?`,
+    similar:  `Hola! Busco algo similar al ${base}. ¿Tenés opciones parecidas?`,
+  };
+  let msg = MSG[tipo] || MSG.consulta;
+  msg += `\n${linkDe(p)}`;
+  return `https://wa.me/${WA()}?text=${encodeURIComponent(msg)}`;
+}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200)}
+function counterOn(slides, counter){
+  slides.addEventListener('scroll',()=>{const i=Math.round(slides.scrollLeft/slides.clientWidth);counter.textContent=`${i+1}/${slides.children.length}`},{passive:true});
+}
+
+/* =========================================================
+   LISTADO + FILTROS
+   ========================================================= */
+// Arriba: tipo de propiedad (uno a la vez). Debajo: botón "Filtros" (barrio, precio, ambientes,
+// dormitorios y características) + Ordenar. Los filtros aplicados se muestran como chips con ×.
+const TIPOS = [
+  {id:"todas", label:"Todas", fn:()=>true},
+  {id:"depto", label:"Deptos", fn:p=>p.tipo==="Departamento"},
+  {id:"casa",  label:"Casas",  fn:p=>p.tipo==="Casa"},
+  {id:"ph",    label:"PH",     fn:p=>p.tipo==="PH"},
+  {id:"pozo",  label:"Desarrollos", fn:isPozo},
+];
+let tipo = "todas", orden = "rel", listScroll = 0, fromList = false;
+
+const filtrosVacios = () => ({ zona:"", barrio:"", pmin:0, pmax:0, amb:new Set(), dorm:0, car:new Set() });
+const clonar = f => ({ ...f, amb:new Set(f.amb), car:new Set(f.car) });
+let F = filtrosVacios(), draft = null;
+const CAR = { cochera:["Cochera", p=>!!p.cochera], credito:["Apto crédito", p=>!!p.aptoCredito], estrenar:["A estrenar", p=>p.antiguedad===0] };
+
+function pasaF(p, f){
+  if (f.zona && zonaDe(p) !== f.zona) return false;
+  if (f.barrio && p.barrio !== f.barrio) return false;
+  if (f.pmin && p.precio < f.pmin) return false;
+  if (f.pmax && p.precio > f.pmax) return false;
+  if (f.amb.size){
+    const a = p.ambientes, b = isPozo(p) && p.ambMax ? p.ambMax : p.ambientes;   // en pozo, rango de tipologías
+    if (![...f.amb].some(v => v === 4 ? b >= 4 : a <= v && v <= b)) return false;
+  }
+  if (f.dorm){
+    const d = isPozo(p) ? (p.ambMax || p.ambientes) - 1 : (p.dormitorios || 0);
+    if (d < f.dorm) return false;
+  }
+  for (const k of f.car) if (!CAR[k][1](p)) return false;
+  return true;
+}
+const pasaFiltros = (p, f = F) => TIPOS.find(t=>t.id===tipo).fn(p) && pasaF(p, f) && (!soloFavs || favs.has(p.codigo));
+const cuentaActivos = f => (f.zona || f.barrio ? 1 : 0) + (f.pmin||f.pmax ? 1 : 0) + (f.amb.size ? 1 : 0) + (f.dorm ? 1 : 0) + f.car.size;
+
+function renderChips(){
+  $('#chips-tipo').innerHTML = TIPOS.map(f=>`<button class="chip" data-t="${f.id}" aria-pressed="${f.id===tipo}">${f.label}</button>`).join("");
+  // Filtros aplicados
+  const chips = [];
+  if (soloFavs) chips.push(["favs", "♥ Guardadas"]);
+  if (F.zona || F.barrio) chips.push(["ubic", F.barrio ? `${F.barrio} (${F.zona})` : F.zona]);
+  if (F.pmin || F.pmax) chips.push(["precio", F.pmin && F.pmax ? `USD ${fmt(F.pmin)} – ${fmt(F.pmax)}` : F.pmin ? `Desde USD ${fmt(F.pmin)}` : `Hasta USD ${fmt(F.pmax)}`]);
+  if (F.amb.size) chips.push(["amb", [...F.amb].sort().map(v=>v===1?"Mono":v===4?"4+":v).join(", ") + " amb."]);
+  if (F.dorm) chips.push(["dorm", `${F.dorm}+ dorm.`]);
+  F.car.forEach(k => chips.push([`car:${k}`, CAR[k][0]]));
+  $('#active-f').innerHTML = chips.map(([k,t]) => `<button class="af" type="button" data-rm="${k}" aria-label="Quitar filtro ${t}">${t}<span aria-hidden="true">×</span></button>`).join("")
+    + (chips.length > 1 ? `<button class="af-clear" type="button" data-reset>Limpiar todo</button>` : "");
+  const n = cuentaActivos(F);
+  $('#fcount').hidden = !n; $('#fcount').textContent = n;
+}
+function quitarFiltro(k){
+  const [tipoF, val] = k.split(/:(.*)/);
+  if (tipoF === "ubic") { F.zona = ""; F.barrio = ""; }
+  else if (tipoF === "precio") { F.pmin = 0; F.pmax = 0; }
+  else if (tipoF === "amb") F.amb.clear();
+  else if (tipoF === "dorm") F.dorm = 0;
+  else if (tipoF === "car") F.car.delete(val);
+  else if (tipoF === "favs") { soloFavs = false; renderFavCount(); }
+}
+
+/* ---- Hoja de filtros: se edita una copia (draft) y se aplica con "Ver N propiedades" ---- */
+function openFiltros(){
+  draft = clonar(F);
+  llenarZonas(); llenarBarrios();
+  $('#fs-pmin').value = draft.pmin ? fmt(draft.pmin) : "";
+  $('#fs-pmax').value = draft.pmax ? fmt(draft.pmax) : "";
+  syncFiltros();
+  $('#scrim').classList.add('open'); $('#filtros-sheet').classList.add('open'); $('#filtros-sheet').scrollTop = 0;
+}
+// Provincia o zona: primero las que tienen propiedades (con cantidad), después el resto en el orden de los portales
+const disponibles = () => PROPIEDADES.filter(p=>p.estado!=="vendida");
+function llenarZonas(){
+  const disp = disponibles(), n = z => disp.filter(p=>zonaDe(p)===z).length;
+  const con = ZONAS.filter(z=>n(z)), sin = ZONAS.filter(z=>!n(z));
+  $('#fs-zona').innerHTML = `<option value="">Todas las zonas</option>`
+    + (con.length ? `<optgroup label="Con propiedades publicadas">${con.map(z=>`<option value="${z}">${z} (${n(z)})</option>`).join("")}</optgroup>` : "")
+    + `<optgroup label="Otras zonas y provincias">${sin.map(z=>`<option value="${z}">${z}</option>`).join("")}</optgroup>`;
+  $('#fs-zona').value = draft.zona;
+}
+// Barrio o localidad de la zona elegida (incluye barrios cargados en el panel que no estén en la lista)
+function llenarBarrios(){
+  const sel = $('#fs-barrio');
+  if (!draft.zona){ sel.innerHTML = `<option value="">Elegí primero una zona</option>`; sel.disabled = true; return; }
+  sel.disabled = false;
+  const disp = disponibles().filter(p=>zonaDe(p)===draft.zona), n = b => disp.filter(p=>p.barrio===b).length;
+  const todos = [...new Set([...UBICACIONES[draft.zona], ...disp.map(p=>p.barrio)])].sort((a,b)=>a.localeCompare(b,"es"));
+  const con = todos.filter(b=>n(b)), sin = todos.filter(b=>!n(b));
+  sel.innerHTML = `<option value="">Todos los barrios y localidades</option>`
+    + (con.length ? `<optgroup label="Con propiedades publicadas">${con.map(b=>`<option value="${b}">${b} (${n(b)})</option>`).join("")}</optgroup>` : "")
+    + `<optgroup label="${con.length ? "Otros" : "Barrios y localidades"}">${sin.map(b=>`<option value="${b}">${b}</option>`).join("")}</optgroup>`;
+  sel.value = draft.barrio;
+}
+function syncFiltros(){
+  const mark = (sel, on) => document.querySelectorAll(`${sel} button`).forEach(b=>b.setAttribute('aria-pressed', on(b.dataset.v)));
+  mark('#fs-amb', v=>draft.amb.has(+v));
+  mark('#fs-dorm', v=>draft.dorm === +v);
+  mark('#fs-car', v=>draft.car.has(v));
+  const n = PROPIEDADES.filter(p=>p.estado!=="vendida" && pasaFiltros(p, draft)).length;
+  $('#fs-apply').textContent = n ? `Ver ${n} ${n===1?"propiedad":"propiedades"}` : "Ver resultados";
+}
+const toggle = (set, v) => set.has(v) ? set.delete(v) : set.add(v);
+$('#open-filtros').onclick = openFiltros;
+$('#fs-zona').onchange = e=>{ draft.zona = e.target.value; draft.barrio = ""; llenarBarrios(); syncFiltros(); };
+$('#fs-barrio').onchange = e=>{ draft.barrio = e.target.value; syncFiltros(); };
+$('#fs-amb').onclick    = e=>{ const b=e.target.closest('button'); if(b){ toggle(draft.amb, +b.dataset.v); syncFiltros(); } };
+$('#fs-dorm').onclick   = e=>{ const b=e.target.closest('button'); if(b){ draft.dorm = draft.dorm === +b.dataset.v ? 0 : +b.dataset.v; syncFiltros(); } };
+$('#fs-car').onclick    = e=>{ const b=e.target.closest('button'); if(b){ toggle(draft.car, b.dataset.v); syncFiltros(); } };
+['#fs-pmin','#fs-pmax'].forEach(s => $(s).oninput = e=>{
+  const d = e.target.value.replace(/\D/g,""); e.target.value = d ? fmt(+d) : "";
+  draft[s === '#fs-pmin' ? 'pmin' : 'pmax'] = +d || 0; syncFiltros();
+});
+$('#fs-clear').onclick = ()=>{ draft = filtrosVacios(); $('#fs-pmin').value = $('#fs-pmax').value = ""; syncFiltros(); };
+$('#fs-apply').onclick = ()=>{
+  if (draft.pmin && draft.pmax && draft.pmin > draft.pmax) [draft.pmin, draft.pmax] = [draft.pmax, draft.pmin];
+  F = draft; closeSheet(); renderChips(); renderList(); scrollTo({ top: $('#filters').offsetTop, behavior: "smooth" });
+};
+/* =========================================================
+   GUARDADAS (corazón) — se recuerdan en el navegador de cada visitante
+   ========================================================= */
+const FAV_KEY = "galeria_favs_v1";
+let favs = new Set();
+try { favs = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]")); } catch {}
+let soloFavs = false;
+const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.3 4.5 6.8 4.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.5 0 5.4 3.5 4.1 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>';
+const favBtn = (p, cls) => `<button class="${cls === "iconbtn" ? "iconbtn heart" : "fav"}" type="button" data-fav="${p.codigo}" aria-pressed="${favs.has(p.codigo)}" aria-label="${favs.has(p.codigo) ? "Quitar de guardadas" : "Guardar propiedad"}">${HEART}</button>`;
+function toggleFav(c){
+  const on = !favs.has(c);
+  on ? favs.add(c) : favs.delete(c);
+  try { localStorage.setItem(FAV_KEY, JSON.stringify([...favs])); } catch {}
+  document.querySelectorAll(`[data-fav="${CSS.escape(c)}"]`).forEach(b=>{ b.setAttribute('aria-pressed', on); b.setAttribute('aria-label', on ? "Quitar de guardadas" : "Guardar propiedad"); });
+  renderFavCount();
+  toast(on ? "Guardada ♥" : "Quitada de guardadas");
+  if (soloFavs && !on) { renderChips(); renderList(); }
+}
+function renderFavCount(){
+  const n = [...favs].filter(c => PROPIEDADES.some(p=>p.codigo===c)).length;
+  $('#fav-n').textContent = n;
+  $('#ver-favs').classList.toggle('has', n > 0);
+  $('#ver-favs').setAttribute('aria-pressed', soloFavs);
+}
+$('#ver-favs').onclick = ()=>{
+  soloFavs = !soloFavs; renderFavCount(); renderChips(); renderList();
+  if (soloFavs && !favs.size) toast("Tocá el ♥ en las propiedades que te gusten");
+};
+
+/* =========================================================
+   COMPARAR — hasta 3 propiedades lado a lado (entran en un celular sin scroll lateral)
+   ========================================================= */
+const MAX_CMP = 3;
+let cmpSel = [];
+function toggleCmp(c){
+  const i = cmpSel.indexOf(c);
+  if (i >= 0) cmpSel.splice(i, 1);
+  else if (cmpSel.length >= MAX_CMP) { toast(`Podés comparar hasta ${MAX_CMP} propiedades`); return; }
+  else cmpSel.push(c);
+  document.querySelectorAll(`[data-cmp="${CSS.escape(c)}"]`).forEach(b=>b.setAttribute('aria-pressed', cmpSel.includes(c)));
+  renderCmpBar();
+}
+function renderCmpBar(){
+  const n = cmpSel.length;
+  $('#cmp-bar').classList.toggle('show', n > 0);
+  document.body.classList.toggle('has-cmp', n > 0);
+  $('#cmp-txt').innerHTML = `<b>${n} ${n===1?"seleccionada":"seleccionadas"}</b><small>${n < 2 ? "Elegí al menos 2 para comparar" : `Hasta ${MAX_CMP}`}</small>`;
+  $('#cmp-go').disabled = n < 2;
+}
+$('#cmp-clear').onclick = ()=>{ cmpSel = []; document.querySelectorAll('[data-cmp]').forEach(b=>b.setAttribute('aria-pressed','false')); renderCmpBar(); };
+$('#cmp-go').onclick = ()=> openCompare();
+$('#cmp-close').onclick = ()=> closeCompare();
+
+function openCompare(){
+  const ps = cmpSel.map(c=>PROPIEDADES.find(p=>p.codigo===c)).filter(Boolean);
+  if (ps.length < 2) { closeCompare(); return; }
+  const N = ps.length, cols = `grid-template-columns:repeat(${N},minmax(0,1fr))`;
+  const dorm = p => isPozo(p) ? (p.ambMax||p.ambientes) - 1 : (p.dormitorios||0);
+  // [etiqueta, texto, valor numérico para marcar el mejor, "min" | "max"]
+  const filas = [
+    ["Precio",            p=>precioTxt(p),                                  p=>p.precio, "min"],
+    ["Precio por m²",     p=>p.m2 ? `USD ${fmt(Math.round(p.precio/p.m2))}` : "–", p=>p.m2 ? p.precio/p.m2 : null, "min"],
+    ["Expensas",          p=>isPozo(p) ? "A definir" : p.expensas ? `$ ${fmt(p.expensas)}` : "Sin expensas", p=>isPozo(p)?null:(p.expensas||0), "min"],
+    ["Superficie total",  p=>isPozo(p) ? m2Rango(p) : `${p.m2} m²`,          p=>isPozo(p)?null:p.m2, "max"],
+    ["Superficie cubierta", p=>isPozo(p) ? "–" : `${p.m2cub||p.m2} m²`,      p=>isPozo(p)?null:(p.m2cub||p.m2), "max"],
+    ["Ambientes",         p=>isPozo(p) && p.ambMax > p.ambientes ? `${p.ambientes} a ${p.ambMax}` : p.ambientes === 1 ? "Mono" : p.ambientes,                                   p=>p.ambMax||p.ambientes, "max"],
+    ["Dormitorios",       p=>dorm(p) > 0 ? (isPozo(p) ? `Hasta ${dorm(p)}` : dorm(p)) : "–", p=>dorm(p), "max"],
+    ["Baños",             p=>p.banos || "–",                                p=>p.banos||0, "max"],
+    ["Cochera",           p=>p.cochera ? (isPozo(p) ? "Opcional" : "Sí") : "No"],
+    ["Antigüedad",        p=>isPozo(p) ? "En pozo" : p.antiguedad ? `${p.antiguedad} años` : "A estrenar"],
+    ["Entrega",           p=>isPozo(p) ? (p.pozo?.entrega || "A confirmar") : "Inmediata"],
+    ["Disposición",       p=>p.disposicion || "–"],
+    ["Apto crédito",      p=>p.aptoCredito ? "Sí" : "No"],
+    ["Estado",            p=>({nueva:"Nuevo ingreso",disponible:"Disponible",reservada:"Reservada",vendida:"Vendida"}[p.estado]||"")],
+  ];
+  const filaHTML = ([lbl, txt, num, mejor]) => {
+    const vals = ps.map(txt);
+    if (vals.every(v => v === "–")) return "";
+    let best = -1;
+    if (num) {
+      const ns = ps.map(num);
+      const ok = ns.filter(v => v != null);
+      if (ok.length >= 2 && new Set(ok).size > 1) {
+        const b = mejor === "min" ? Math.min(...ok) : Math.max(...ok);
+        if (ns.filter(v => v === b).length === 1) best = ns.indexOf(b);
+      }
+    }
+    return `<div class="cmp-row"><div class="cmp-lbl">${lbl}</div>
+      <div class="cmp-grid cmp-vals" style="${cols}">${vals.map((v,i)=>`<div class="${i===best?"best":""}">${v}</div>`).join("")}</div></div>`;
+  };
+  $('#cmp-title').textContent = `Comparar ${N} propiedades`;
+  $('#cmp-body').innerHTML = `
+    <div class="cmp-grid" style="${cols}">${ps.map(p=>`<div class="cmp-head">
+      <img src="${p.fotos[0]}" alt="" onerror="this.style.visibility='hidden'">
+      <button class="x" type="button" data-cmp-rm="${p.codigo}" aria-label="Quitar ${p.codigo} de la comparación">×</button>
+      <div><b>${precioTxt(p)}</b><span>${p.tipo === "Desarrollo en pozo" ? "Desarrollo" : p.tipo} · ${p.barrio}</span><span>Cód. ${p.codigo}</span></div>
+    </div>`).join("")}</div>
+    ${filas.map(filaHTML).join("")}
+    <div class="cmp-row"><div class="cmp-lbl">Ver la ficha</div>
+      <div class="cmp-grid cmp-links" style="${cols}">${ps.map(p=>`<button type="button" data-cmp-ver="${p.codigo}">Ver</button>`).join("")}</div></div>
+    <p class="cmp-note">En verde, el mejor valor de cada fila.</p>`;
+  const msg = `Hola! Estoy comparando estas propiedades y quiero consultarte:\n` +
+    ps.map(p=>`• Cód. ${p.codigo}: ${textoKind(p)}, ${precioTxt(p)}`).join("\n") + `\n¿Me ayudás a decidir?`;
+  $('#cmp-wa').href = `https://wa.me/${WA()}?text=${encodeURIComponent(msg)}`;
+  $('#cmp-wa').innerHTML = `${ICON.wa}Consultar por estas ${N}`;
+  $('#cmp-view').classList.add('open'); $('#cmp-view').scrollTop = 0; document.body.style.overflow = "hidden";
+}
+function closeCompare(){ $('#cmp-view').classList.remove('open'); document.body.style.overflow = ""; }
+$('#cmp-body').onclick = e=>{
+  const rmb = e.target.closest('[data-cmp-rm]');
+  if (rmb){ toggleCmp(rmb.dataset.cmpRm); cmpSel.length >= 2 ? openCompare() : closeCompare(); return; }
+  const v = e.target.closest('[data-cmp-ver]');
+  if (v){ closeCompare(); listScroll = scrollY; fromList = true; location.hash = `#/p/${v.dataset.cmpVer}`; }
+};
+
+function card(p){
+  const fotos = p.fotos.slice(0,5);
+  return `<article class="card" data-c="${p.codigo}" tabindex="0" aria-label="${p.titulo}, ${precio(p)}${p.estado==='reservada'?', reservada':p.estado==='vendida'?', vendida':''}">
+    <div class="media st-${p.estado}">
+      ${veil(p.estado)}
+      <div class="slides">${fotos.map((f,i)=>`<img src="${f}" alt="${p.titulo} – foto ${i+1}" loading="${i?'lazy':'eager'}" onerror="this.classList.add('err')">`).join("")}</div>
+      ${p.estado==="nueva" ? RIBBON : ""}
+      <div class="badges ${p.estado==="nueva"?"has-ribbon":""}">${badges(p)}</div>
+      ${favBtn(p, "fav")}
+      ${p.video?`<span class="tour">▶ Tour</span>`:""}
+      <span class="photos-n">${ICON.cam}${p.fotos.length}</span>
+      ${fotos.length>1?`<span class="counter">1/${fotos.length}</span>`:""}
+    </div>
+    <div class="body">
+      <div class="kind">${kind(p)}</div>
+      <div class="price">${precioTxt(p)}</div>
+      ${isPozo(p) && p.pozo
+        ? `<div class="exp">Entrega ${p.pozo.entrega} · ${p.pozo.avance}% de avance de obra</div>`
+        : p.expensas?`<div class="exp">+ $ ${fmt(p.expensas)} expensas</div>`:""}
+      <div class="feats">${feats(p)}</div>
+      <div class="addr">${p.direccion || p.barrio}<small>${p.barrio}, ${p.ciudad} · Cód. ${p.codigo}</small></div>
+      <div class="title">${p.titulo}</div>
+      <p class="snippet">${(p.descripcion||"").split("\n")[0]}</p>
+      <div class="card-foot">
+        <button class="cmp-tg" type="button" data-cmp="${p.codigo}" aria-pressed="${cmpSel.includes(p.codigo)}"><i aria-hidden="true"></i>Comparar</button>
+        ${p.estado==="vendida"
+          ? `<a class="wa-mini ghost" href="${waLink(p,'similar')}" target="_blank" rel="noopener">Busco similar</a>`
+          : `<a class="wa-mini" href="${waLink(p, p.estado==='reservada'?'libera':isPozo(p)?'info':'consulta')}" target="_blank" rel="noopener" aria-label="Consultar por WhatsApp sobre ${p.titulo}">${ICON.wa}WhatsApp</a>`}
+      </div>
+    </div>
+  </article>`;
+}
+function renderList(){
+  // disponibles primero y vendidas al final; dentro de cada grupo, el orden elegido
+  const grupo = {nueva:0,disponible:0,reservada:1,vendida:2};
+  const cmp = {
+    rel:  (a,b)=>({nueva:0,disponible:1}[a.estado]??0)-({nueva:0,disponible:1}[b.estado]??0),
+    new:  (a,b)=>(b.publicado||"").localeCompare(a.publicado||""),
+    asc:  (a,b)=>a.precio-b.precio,
+    desc: (a,b)=>b.precio-a.precio,
+  }[orden];
+  const items = PROPIEDADES.filter(p => pasaFiltros(p)).sort((a,b)=>grupo[a.estado]-grupo[b.estado] || cmp(a,b));
+  const n = items.filter(p=>p.estado!=='vendida').length;
+  $('#count').innerHTML = `<b>${n}</b> ${n===1?'propiedad':'propiedades'}`;
+  const vacio = soloFavs && !favs.size
+    ? `<div class="empty">Todavía no guardaste propiedades.<br>Tocá el ♥ en las que te gusten para encontrarlas acá.<br><button class="more" data-reset>Ver todas</button></div>`
+    : helperHTML(CFG.ayudaTitulo, "filtros")
+      + `<button class="more empty-reset" type="button" data-reset>Ver todas las propiedades</button>`;
+  $('#list').innerHTML = items.length ? items.map(card).join("") + helperHTML(CFG.ayudaTitulo, "lista") : vacio;
+  $('#list').querySelectorAll('.card').forEach(c=>counterOn(c.querySelector('.slides'), c.querySelector('.counter')||{}));
+}
+function skeleton(){
+  $('#list').innerHTML = Array(3).fill(`<div class="card"><div class="media sk"></div><div class="body"><div class="sk" style="height:24px;width:50%;border-radius:6px"></div><div class="sk" style="height:16px;width:80%;border-radius:6px;margin-top:10px"></div></div></div>`).join("");
+}
+
+$('#sort').onchange = e=>{ orden = e.target.value; renderList(); };
+document.addEventListener('click', e=>{
+  if (e.target.closest('a[href]')) return;   // botones de WhatsApp dentro de la tarjeta
+  const fv = e.target.closest('[data-fav]');
+  if (fv){ toggleFav(fv.dataset.fav); return; }
+  const cb = e.target.closest('[data-cmp]');
+  if (cb){ toggleCmp(cb.dataset.cmp); return; }
+  const bq = e.target.closest('[data-busca]');
+  if (bq){ openBusca(bq.dataset.busca === "ficha" ? actual : null, bq.dataset.busca === "filtros"); return; }
+  const s = e.target.closest('[data-sim]');
+  if (s){ fromList = true; location.hash = `#/p/${s.dataset.sim}`; return; }
+  const t = e.target.closest('[data-t]');
+  if (t){ tipo = t.dataset.t; renderChips(); renderList(); return; }
+  const rm = e.target.closest('[data-rm]');
+  if (rm){ quitarFiltro(rm.dataset.rm); renderChips(); renderList(); return; }
+  if (e.target.closest('[data-reset]')){ tipo="todas"; F = filtrosVacios(); soloFavs = false; renderFavCount(); renderChips(); renderList(); return; }
+  const c = e.target.closest('.card[data-c]');
+  if (c){ listScroll = scrollY; fromList = true; location.hash = `#/p/${c.dataset.c}`; }
+});
+document.addEventListener('keydown', e=>{
+  if (e.key==="Enter" && e.target.matches('.card[data-c]')) e.target.click();
+  if (e.key==="Escape"){ closeSheet(); closeModal(); closeCompare(); }
+});
+new IntersectionObserver(([en])=>$('#filters').classList.toggle('stuck', en.intersectionRatio<1),{threshold:[1],rootMargin:"-1px 0px 0px 0px"}).observe($('#filters'));
+
+/* =========================================================
+   DETALLE
+   ========================================================= */
+let actual = null, franja = "";
+
+function renderDetail(p){
+  actual = p;
+  const vendida = p.estado === "vendida";
+  const pozo = isPozo(p) ? (p.pozo || {entrega:"A confirmar", avance:0}) : null;
+  const fila = (ic,v,l)=>`<div>${ICON[ic]}<p><b>${v}</b><span>${l}</span></p></div>`;
+  const d = 0.008;
+  // Similares: mismo tipo o precio parecido (±35 %), sin vendidas
+  const sims = PROPIEDADES.filter(x=>x.codigo!==p.codigo && x.estado!=="vendida" &&
+      (x.tipo===p.tipo || Math.abs(x.precio-p.precio)/p.precio<.35)).slice(0,3);
+  $('#detail').innerHTML = `
+    <div class="topbar"><div class="wrap">
+      <button class="iconbtn" id="back" aria-label="Volver al listado">${ICON.back}</button>
+      <div style="display:flex;gap:8px">
+        ${favBtn(p, "iconbtn")}
+        <button class="iconbtn" id="share" aria-label="Compartir propiedad">${ICON.share}</button>
+      </div>
+    </div></div>
+
+    <div class="gallery st-${p.estado}">
+      ${veil(p.estado)}
+      <div class="slides">${p.fotos.map((f,i)=>`<img src="${f}" alt="${p.titulo} – foto ${i+1}" loading="${i?'lazy':'eager'}" data-zoom="${f}" onerror="this.classList.add('err')">`).join("")}</div>
+      <div class="badges" style="top:68px;right:16px">${badges(p, true)}</div>
+      <span class="counter">1/${p.fotos.length}</span>
+      ${p.video?`<button class="play-cta" id="play"><i>${ICON.play}</i>Ver tour en video</button>`:""}
+    </div>
+
+    <header class="d-head">
+      <div class="kind" style="font-size:17px">${kind(p)}</div>
+      <div class="price">${precioTxt(p)}</div>
+      <div class="price-sub">
+        ${pozo
+          ? `<span>Entrega ${pozo.entrega}</span>${precioM2(p)?`<span>Desde ${precioM2(p)}</span>`:""}`
+          : `${p.expensas?`<span>Expensas $ ${fmt(p.expensas)}</span>`:`<span>Sin expensas</span>`}${precioM2(p)?`<span>${precioM2(p)}</span>`:""}`}
+      </div>
+      <div class="d-tags">
+        ${pozo?`<span>En pozo</span>`:""}
+        ${pozo?.financiacion?`<span>Con financiación</span>`:""}
+        ${p.aptoCredito&&!vendida?`<span>Apto crédito</span>`:""}
+        ${p.antiguedad===0&&!pozo?`<span>A estrenar</span>`:""}
+        ${p.video?`<span>Tour en video</span>`:""}
+      </div>
+      <h2>${p.titulo}</h2>
+      <div class="loc">${ICON.pin}<p>${p.direccion || p.barrio}<small>${p.barrio}, ${p.ciudad}</small></p></div>
+      <p class="pub">Cód. ${p.codigo}</p>
+    </header>
+
+    ${pozo ? `
+    <div class="ficha" aria-label="Datos del desarrollo">
+      ${fila("age", pozo.entrega, "Entrega estimada")}
+      ${fila("obra", pozo.avance+"%", "Avance de obra")}
+      ${fila("amb", ambTexto(p), "Tipologías")}
+      ${fila("m2", m2Rango(p), "Superficies")}
+      ${fila("car", p.cochera?"Opcionales":"No", "Cocheras")}
+      ${fila("fin", pozo.financiacion?"Sí":"Consultar", "Financiación")}
+    </div>
+
+    <section class="section">
+      <h3>Avance de obra</h3>
+      <div class="prog-lbl"><span>Entrega ${pozo.entrega}</span><b>${pozo.avance}%</b></div>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pozo.avance}" aria-label="Avance de obra"><i style="width:${Math.min(100,Math.max(0,pozo.avance))}%"></i></div>
+    </section>
+
+    ${pozo.tipologias?.length ? `<section class="section">
+      <h3>Unidades disponibles</h3>
+      <div class="units">${pozo.tipologias.map(u=>`<div class="unit">
+        <p><b>${u.amb} · ${u.m2} m²</b><span>Desde USD ${fmt(u.precio)}</span></p>
+        <a href="${waLink(p,'unidad','',u)}" target="_blank" rel="noopener" aria-label="Consultar por la unidad de ${u.amb}">Consultar</a>
+      </div>`).join("")}</div>
+    </section>` : ""}
+
+    ${pozo.financiacion ? `<section class="section">
+      <h3>Financiación</h3>
+      <p class="fin-box">${pozo.financiacion}</p>
+    </section>` : ""}
+    ` : `
+    <div class="ficha" aria-label="Características principales">
+      ${fila("m2", p.m2+" m²", "Superficie total")}
+      ${fila("m2", (p.m2cub||p.m2)+" m²", "Superficie cubierta")}
+      ${fila("amb", p.ambientes, p.ambientes===1?"Ambiente":"Ambientes")}
+      ${fila("bed", p.dormitorios||"–", "Dormitorios")}
+      ${fila("bath", p.banos, p.banos>1?"Baños":"Baño")}
+      ${fila("car", p.cochera?"Sí":"No", "Cochera")}
+      ${fila("age", p.antiguedad?p.antiguedad+" años":"A estrenar", "Antigüedad")}
+      ${fila("dir", p.disposicion||"–", "Disposición")}
+    </div>`}
+
+    <section class="section">
+      <h3>Descripción</h3>
+      <p class="desc clamp" id="desc">${p.descripcion}</p>
+      <button class="more" id="more" hidden>Ver más</button>
+    </section>
+
+    ${p.amenities?.length?`<section class="section"><h3>Características y amenities</h3><div class="amen">${p.amenities.map(a=>`<span>${a}</span>`).join("")}</div></section>`:""}
+
+    <section class="section">
+      <h3>Ubicación</h3>
+      <div class="map"><iframe loading="lazy" title="Mapa de la zona"
+        src="https://www.openstreetmap.org/export/embed.html?bbox=${p.lng-d},${p.lat-d},${p.lng+d},${p.lat+d}&layer=mapnik"></iframe></div>
+      <p class="note">Ubicación aproximada. La dirección exacta se comparte al coordinar la visita.</p>
+    </section>
+
+    <section class="section">
+      <div class="agent">
+        ${avatar()}
+        <div><b>${CFG.nombre}</b><span>${CFG.rol}</span></div>
+      </div>
+    </section>
+
+    ${sims.length?`<section class="section">
+      <h3>Propiedades similares</h3>
+      <div class="sims">${sims.map(s=>`<button class="sim" data-sim="${s.codigo}">
+        <img src="${s.fotos[0]}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+        <span style="min-width:0"><b>${precioTxt(s)}</b><span>${ambTexto(s)} · ${isPozo(s)?m2Rango(s):s.m2+" m²"} · ${s.barrio}</span><span>${s.estado==="reservada"?"Reservada":s.tipo}</span></span>
+      </button>`).join("")}</div>
+    </section>`:""}
+
+    ${helperHTML(CFG.ayudaTituloFicha, "ficha")}
+
+    <div class="cta"><div class="wrap">
+      ${vendida
+        ? `<a class="btn btn-wa" href="${waLink(p,'similar')}" target="_blank" rel="noopener">${ICON.wa}Busco algo similar</a>`
+        : p.estado === "reservada"
+        ? `<a class="btn btn-wa" href="${waLink(p,'libera')}" target="_blank" rel="noopener">${ICON.wa}Avisame si se libera</a>
+           <a class="btn btn-sec" href="${waLink(p,'similar')}" target="_blank" rel="noopener">Ver similares</a>`
+        : pozo
+        ? `<a class="btn btn-wa" href="${waLink(p,'info')}" target="_blank" rel="noopener">${ICON.wa}Pedir información</a>
+           <button class="btn btn-sec" id="visita">Agendar visita</button>`
+        : `<button class="btn btn-wa" id="visita">${ICON.wa}Agendar visita</button>
+           <a class="btn btn-sec" href="${waLink(p,'consulta')}" target="_blank" rel="noopener">Consultar</a>`}
+    </div></div>`;
+
+  counterOn($('#detail .slides'), $('#detail .counter'));
+  const desc = $('#desc'), more = $('#more');
+  requestAnimationFrame(()=>{ if (desc.scrollHeight > desc.clientHeight + 2) more.hidden = false; });
+  more.onclick = ()=>{ const c = desc.classList.toggle('clamp'); more.textContent = c ? "Ver más" : "Ver menos"; };
+  $('#back').onclick = ()=> fromList ? history.back() : (location.hash = "");
+  $('#share').onclick = ()=> openShare(p);
+  $('#play')?.addEventListener('click', ()=>openModal(videoHTML(p.video)));
+  $('#detail .slides').addEventListener('click', e=>{ const z=e.target.dataset?.zoom; if(z) openModal(`<img src="${z}" alt="">`); });
+  $('#visita')?.addEventListener('click', openSheet);
+}
+
+/* YouTube / Vimeo / mp4 */
+function videoHTML(url){
+  const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  const frame = src => `<iframe src="${src}" style="width:100%;aspect-ratio:16/9;border:0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="Tour en video"></iframe>`;
+  if (yt) return frame(`https://www.youtube-nocookie.com/embed/${yt[1]}?autoplay=1&playsinline=1&rel=0`);
+  if (vm) return frame(`https://player.vimeo.com/video/${vm[1]}?autoplay=1`);
+  return `<video src="${url}" controls autoplay playsinline></video>`;
+}
+
+/* Bottom sheet */
+function openSheet(){ franja=""; document.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed','false')); $('#sheet-go').href = waLink(actual,'visita'); $('#scrim').classList.add('open'); $('#sheet').classList.add('open'); }
+function closeSheet(){ $('#scrim').classList.remove('open'); ['#sheet','#share-sheet','#busca-sheet','#filtros-sheet'].forEach(s=>$(s).classList.remove('open')); }
+
+/* =========================================================
+   "TE AYUDO A ENCONTRAR TU PROPIEDAD"
+   Bloque al final del listado y de cada ficha + hoja que arma el WhatsApp
+   ========================================================= */
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function helperHTML(titulo, desde, texto){
+  const puntos = (CFG.ayudaPuntos || []).filter(s => s && s.trim());
+  return `<section class="helper" aria-labelledby="helper-${desde}">
+    <div class="helper-top">
+      ${avatar("avatar helper-photo")}
+      <div><h3 id="helper-${desde}">${titulo}</h3><small class="helper-who">${CFG.nombre}</small></div>
+    </div>
+    <p>${texto || CFG.ayudaTexto}</p>
+    ${puntos.length ? `<ul>${puntos.map(t=>`<li>${CHECK}${t}</li>`).join("")}</ul>` : ""}
+    <a class="btn" href="https://wa.me/${WA()}?text=${encodeURIComponent(msgHablemos(desde))}" target="_blank" rel="noopener">${ICON.wa}${CFG.ayudaBoton}</a>
+    <button class="helper-alt" type="button" data-busca="${desde}">o contame qué buscás en 4 pasos</button>
+  </section>`;
+}
+// "un departamento de 2 ambientes en Coghlan, hasta USD 150.000"
+function queBuscoFiltros(){
+  const t = {depto:"un departamento", casa:"una casa", ph:"un PH", pozo:"un desarrollo en pozo"}[tipo] || "una propiedad";
+  const amb = F.amb.size ? ` de ${[...F.amb].sort().map(v=>v===1?"1":v===4?"4 o más":v).join(" o ")} ambientes` : "";
+  const dorm = F.dorm ? `, ${F.dorm}+ dormitorios` : "";
+  const zona = F.barrio ? ` en ${F.barrio}, ${F.zona}` : F.zona ? ` en ${F.zona}` : "";
+  const precio = F.pmax ? `, hasta USD ${fmt(F.pmax)}` : F.pmin ? `, desde USD ${fmt(F.pmin)}` : "";
+  const extras = [...F.car].map(k=>CAR[k][0].toLowerCase());
+  return t + amb + dorm + zona + precio + (extras.length ? `, con ${extras.join(" y ")}` : "");
+}
+function msgHablemos(desde){
+  if (desde === "filtros") return `Hola! Estoy buscando ${queBuscoFiltros()}. ¿Me ayudás a encontrar opciones?`;
+  if (desde === "ficha" && actual)
+    return `Hola! Estuve viendo la propiedad cód. ${actual.codigo} (${textoKind(actual)}) y me gustaría ver más opciones. ¿Hablamos?`;
+  return "Hola! Vi tu galería de propiedades y me gustaría que me ayudes a buscar. ¿Hablamos?";
+}
+const busca = { tipo:"", amb:"" };
+function openBusca(p, desdeFiltros){
+  // Desde una ficha, precarga lo que estaba mirando
+  busca.tipo = p ? (isPozo(p) ? "Pozo" : p.tipo) : ""; busca.amb = p ? String(Math.min(p.ambientes,4)) : "";
+  $('#b-zona').value = p ? p.barrio : "";
+  $('#b-max').value = p ? fmt(Math.ceil(p.precio*1.1/5000)*5000) : "";
+  if (desdeFiltros){
+    busca.tipo = {depto:"Departamento", casa:"Casa", ph:"PH", pozo:"Pozo"}[tipo] || "";
+    busca.amb = F.amb.size ? String(Math.min(...F.amb)) : "";
+    $('#b-zona').value = F.barrio ? `${F.barrio}, ${F.zona}` : F.zona;
+    $('#b-max').value = F.pmax ? fmt(F.pmax) : "";
+  }
+  syncBusca();
+  $('#scrim').classList.add('open'); $('#busca-sheet').classList.add('open');
+}
+function syncBusca(){
+  document.querySelectorAll('#b-tipo button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===busca.tipo && busca.tipo!==""));
+  document.querySelectorAll('#b-amb button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===busca.amb));
+  const zona = $('#b-zona').value.trim(), max = $('#b-max').value.replace(/\D/g,"");
+  const TXT = { Departamento:"un departamento", Casa:"una casa", PH:"un PH", Pozo:"una unidad en pozo", Otro:"una propiedad" };
+  const queBusco = (TXT[busca.tipo] || "una propiedad")
+    + (busca.amb ? ` de ${busca.amb==="4"?"4 o más":busca.amb} ${busca.amb==="1"?"ambiente":"ambientes"}` : "")
+    + (zona ? ` en ${zona}` : "")
+    + (max ? `, hasta USD ${fmt(+max)}` : "");
+  const msg = `Hola! Estoy buscando ${queBusco}. ¿Me ayudás a encontrar opciones?`;
+  $('#busca-go').href = `https://wa.me/${WA()}?text=${encodeURIComponent(msg)}`;
+}
+$('#b-tipo').onclick = e=>{ const b=e.target.closest('button'); if(!b) return; busca.tipo = busca.tipo===b.dataset.v ? "" : b.dataset.v; syncBusca(); };
+$('#b-amb').onclick  = e=>{ const b=e.target.closest('button'); if(!b) return; busca.amb  = busca.amb===b.dataset.v ? "" : b.dataset.v; syncBusca(); };
+$('#b-zona').oninput = syncBusca;
+$('#b-max').oninput = e=>{ const d=e.target.value.replace(/\D/g,""); e.target.value = d ? fmt(+d) : ""; syncBusca(); };
+$('#busca-go').addEventListener('click', ()=> setTimeout(closeSheet, 300));
+
+/* Compartir: WhatsApp y Facebook tienen link para compartir; Instagram no permite
+   compartir un link desde la web, así que se usa el menú del celular o se copia el link. */
+let shareData = null;
+function openShare(p){
+  const url = linkDe(p);
+  const text = `${kind(p).replace(/<[^>]+>/g,"")} · ${precio(p)}`;
+  shareData = { title: p.titulo, text, url };
+  $('#sh-wa').href = `https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`;
+  $('#sh-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  $('#sh-more').hidden = !navigator.share;
+  $('#scrim').classList.add('open'); $('#share-sheet').classList.add('open');
+}
+async function copyLink(msg){
+  try { await navigator.clipboard.writeText(shareData.url); toast(msg); }
+  catch { prompt("Copiá el link:", shareData.url); }
+}
+$('#sh-copy').onclick = ()=>{ copyLink("Link copiado"); closeSheet(); };
+$('#sh-ig').onclick = async ()=>{
+  // En el celular abre el menú nativo, donde aparece Instagram (historias o mensaje directo)
+  if (navigator.share && matchMedia('(pointer:coarse)').matches){
+    try { await navigator.share(shareData); closeSheet(); return; } catch(e){ if (e.name === "AbortError") return; }
+  }
+  await copyLink("Link copiado: pegalo en tu historia o mensaje de Instagram");
+  closeSheet();
+};
+$('#sh-more').onclick = async ()=>{ try { await navigator.share(shareData); closeSheet(); } catch {} };
+['#sh-wa','#sh-fb'].forEach(s=> $(s).addEventListener('click', ()=> setTimeout(closeSheet, 300)));
+$('#scrim').onclick = closeSheet;
+$('#opts').onclick = e=>{
+  const o = e.target.closest('.opt'); if(!o) return;
+  document.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed', x===o));
+  franja = o.dataset.v; $('#sheet-go').href = waLink(actual,'visita',franja);
+};
+$('#sheet-go').onclick = ()=> setTimeout(closeSheet, 300);
+
+/* Modal */
+function openModal(html){ $('#modal-body').innerHTML = html; $('#modal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(){ $('#modal').classList.remove('open'); $('#modal-body').innerHTML=""; document.body.style.overflow=''; }
+$('#modal-close').onclick = closeModal;
+
+/* =========================================================
+   ROUTER (#/p/CODIGO) — cada propiedad tiene su link
+   ========================================================= */
+function route(){
+  const m = location.hash.match(/^#\/p\/(.+)$/);
+  const p = m && PROPIEDADES.find(x=>x.codigo===decodeURIComponent(m[1]));
+  closeSheet(); closeModal();
+  if (p){ document.body.classList.add('is-detail'); renderDetail(p); scrollTo(0,0); document.title = `${p.titulo} · ${precioTxt(p)}`; }
+  else { fromList = false; document.body.classList.remove('is-detail'); document.title = "Propiedades en venta"; requestAnimationFrame(()=>scrollTo(0,listScroll)); }
+}
+addEventListener('hashchange', route);
+
+/* Init */
+// Si entran por un link compartido (?p=NX-095), abrir esa propiedad
+const pInicial = new URLSearchParams(location.search).get("p");
+if (pInicial) history.replaceState(null, "", `${location.pathname}#/p/${encodeURIComponent(pInicial)}`);
+renderHero(); renderChips(); skeleton();
+(async () => {
+  try {
+    [PROPIEDADES, CFG] = await Promise.all([Store.publicas(), Config.get()]);
+    renderHero(); renderChips(); renderList(); renderFavCount(); route();
+  } catch (err) {
+    console.error(err);
+    $('#list').innerHTML =`<div class="empty">No pudimos cargar las propiedades.<br>Revisá tu conexión e intentá de nuevo.<br><button class="more" type="button" onclick="location.reload()">Reintentar</button></div>`;
+  }
+})();
+</script>
+</body>
+</html>

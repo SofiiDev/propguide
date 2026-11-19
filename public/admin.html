@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel de control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f1ec; --surface:#fff; --ink:#1d1b18; --muted:#6b655c; --line:#e4ded3;
+    --brand:#1f3d36; --brand-soft:#e6eeeb; --danger:#b3261e;
+    --c-disponible:#2f6f4f; --c-nueva:#1f3d36; --c-reservada:#c27c2c; --c-vendida:#7a746b;
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.45 Hind,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{border:0;background:none;cursor:pointer}
+  .wrap{max-width:640px;margin:0 auto}
+  :focus-visible{outline:3px solid #b8895a;outline-offset:2px}
+
+  /* Header */
+  .top{position:sticky;top:0;z-index:20;background:var(--brand);color:#fff;padding:14px 16px 12px}
+  .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .top h1{font:700 21px Hind,sans-serif}
+  .top small{display:block;font-size:12px;opacity:.75}
+  .link{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap;flex:none}
+
+  /* Stats = filtros por estado */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 6px}
+  .stat{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center;min-height:64px}
+  .stat b{display:block;font:700 22px Hind,sans-serif}
+  .stat span{font-size:12px;color:var(--muted)}
+  .stat[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft)}
+  .search{padding:8px 16px}
+  .search input{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;background:var(--surface);font-size:16px}
+
+  /* Lista */
+  .list{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:6px 16px calc(110px + var(--safe-b))}
+  .stats>*,.seg>*,.preview-status>*,.photos>*{min-width:0}
+  fieldset{min-width:0}
+  @media (max-width:360px){
+    .stat span{font-size:11px}
+    .top h1{font-size:19px}
+    .top small{display:none}
+    .link .lbl-long{display:none}
+    .thumb{width:60px;height:60px}
+    .seg button{font-size:12px}
+  }
+  .row{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+  .row.hidden-prop{opacity:.6}
+  .row-head{display:flex;gap:12px;align-items:center}
+  .thumb{position:relative;flex:none;width:72px;height:72px;border-radius:12px;overflow:hidden;background:#ddd5c8}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .thumb.gris img{filter:grayscale(1) brightness(.9)}
+  .thumb .tag{position:absolute;inset:auto 0 0 0;background:rgba(30,28,25,.72);color:#fff;font-size:10px;font-weight:600;text-align:center;letter-spacing:.08em;text-transform:uppercase;padding:2px 0}
+  .info{flex:1;min-width:0}
+  .info b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25;margin-bottom:2px}
+  .info .p{font-weight:600}
+  .info .c{font-size:13px;color:var(--muted)}
+  .acts{display:flex;flex-direction:column;gap:6px}
+  .ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;background:var(--surface)}
+  .ib svg{width:20px;height:20px}
+
+  /* Selector de estado */
+  .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:10px;background:var(--bg);padding:4px;border-radius:12px}
+  .seg button{min-height:40px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted)}
+  .seg button[aria-pressed="true"]{background:var(--surface);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .seg button[data-e="disponible"][aria-pressed="true"]{background:var(--c-disponible)}
+  .seg button[data-e="nueva"][aria-pressed="true"]{background:var(--c-nueva)}
+  .seg button[data-e="reservada"][aria-pressed="true"]{background:var(--c-reservada)}
+  .seg button[data-e="vendida"][aria-pressed="true"]{background:var(--c-vendida)}
+
+  .fab{position:fixed;right:16px;bottom:calc(16px + var(--safe-b));z-index:30;display:flex;align-items:center;gap:8px;min-height:56px;padding:0 22px 0 18px;border-radius:18px;background:var(--brand);color:#fff;font-weight:600;box-shadow:0 8px 24px rgba(31,61,54,.35)}
+  .fab svg{width:22px;height:22px}
+  /* Perfil */
+  .profile{display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:14px 16px 0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:left;min-height:44px}
+  .pf-av{width:52px;height:52px;border-radius:50%;flex:none;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px;object-fit:cover}
+  .profile .info span{display:block;font-size:13px;color:var(--muted)}
+  .profile .go{flex:none;font-size:14px;font-weight:600;color:var(--brand)}
+  .photo-edit{display:flex;align-items:center;gap:14px;clear:both}
+  .photo-edit .pf-av{width:84px;height:84px;font-size:28px}
+  .photo-edit .btns{display:flex;flex-wrap:wrap;gap:8px}
+  .photo-edit .btn{min-height:44px;font-size:14px;padding:0 14px}
+  .foot{text-align:center;padding:0 16px 24px;color:var(--muted);font-size:13px}
+  .foot button{text-decoration:underline;color:var(--muted);min-height:44px}
+  .empty{text-align:center;color:var(--muted);padding:40px 0}
+
+  /* Editor (pantalla completa) */
+  .editor{position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+  .editor.open{transform:none}
+  .ed-top{position:sticky;top:0;z-index:2;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px}
+  .ed-top .wrap{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .ed-top h2{font:700 18px Hind,sans-serif}
+  form{padding:16px 16px calc(110px + var(--safe-b))}
+  fieldset{border:0;background:var(--surface);border-radius:16px;padding:14px;margin-bottom:14px;border:1px solid var(--line)}
+  legend{font:700 16px Hind,sans-serif;padding:0 2px;margin-bottom:4px;float:left;width:100%}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;clear:both}
+  .grid .full{grid-column:1/-1}
+  label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:4px}
+  input[type=text],input[type=number],input[type=url],select,textarea{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;font-size:16px}
+  textarea{min-height:120px;resize:vertical}
+  input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:none}
+  .check{display:flex;align-items:center;gap:10px;min-height:46px;font-size:15px;color:var(--ink);font-weight:500;margin:0}
+  .check input{width:22px;height:22px;accent-color:var(--brand)}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;clear:both}
+  .ph{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#ddd5c8}
+  .ph img{width:100%;height:100%;object-fit:cover}
+  .ph .x{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:18px;line-height:30px}
+  .ph .first{position:absolute;left:4px;bottom:4px;font-size:10px;font-weight:600;background:#fff;border-radius:6px;padding:1px 6px}
+  .ph .mv{position:absolute;right:4px;bottom:4px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);font-size:14px}
+  .add-ph{aspect-ratio:1;border:2px dashed var(--line);border-radius:12px;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--muted);cursor:pointer}
+  .url-row{display:flex;gap:8px;margin-top:10px}
+  .url-row input{flex:1;min-width:0}
+  .url-row .btn{flex:none;padding:0 14px}
+  .grid>*{min-width:0}
+  .btn{min-height:50px;border-radius:14px;font-weight:600;padding:0 18px}
+  .btn-pri{background:var(--brand);color:#fff}
+  .btn-ghost{border:1.5px solid var(--line);background:#fff}
+  .btn-danger{color:var(--danger);border:1.5px solid #e9c9c6;background:#fff;width:100%}
+  .ed-bar{position:fixed;left:0;right:0;bottom:0;z-index:3;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + var(--safe-b))}
+  .ed-bar .wrap{display:flex;gap:10px}
+  .ed-bar .btn-pri{flex:1}
+  .preview-status{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;clear:both}
+  .preview-status label{margin:0}
+  .radio{display:flex;align-items:center;gap:8px;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;color:var(--ink);font-size:15px;cursor:pointer}
+  .radio input{accent-color:var(--brand);width:18px;height:18px}
+  .radio:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+  .dot{width:10px;height:10px;border-radius:50%}
+
+  /* Ingreso */
+  .login{position:fixed;inset:0;z-index:90;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px 16px;overflow-y:auto}
+  .login.open{display:flex}
+  .login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px 20px}
+  .login-logo{width:56px;height:56px;border-radius:16px;background:var(--brand);color:#fff;display:grid;place-items:center;margin-bottom:14px}
+  .login-logo svg{width:28px;height:28px}
+  .login h1{font:600 24px Hind,sans-serif}
+  .login-sub{color:var(--muted);font-size:15px;margin:4px 0 18px}
+  .login label{display:block;font-size:14px;font-weight:600;margin:12px 0 6px}
+  .login input{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;font-size:16px}
+  .login input:focus{outline:none;border-color:var(--brand)}
+  .login .btn-pri{width:100%;margin-top:16px}
+  .login-err{color:var(--danger);font-size:14px;min-height:20px;margin-top:8px}
+  .login-link{display:block;margin:10px auto 0;min-height:44px;color:var(--brand);font-weight:600;text-decoration:underline}
+  .top-acts{display:flex;gap:6px;flex:none}
+  .demo-banner{background:#fff4d6;color:#6b4e00;font-size:14px;padding:10px 16px;text-align:center}
+  button[disabled]{opacity:.6;cursor:wait}
+  .ph.up{display:grid;place-items:center;font-size:12px;color:var(--muted);text-align:center}
+  .toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;z-index:80;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<!-- ============ INGRESO ============ -->
+<div class="login" id="login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="login-card">
+    <div class="login-logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>
+    </div>
+    <h1 id="login-title">Panel de control</h1>
+    <p class="login-sub" id="login-sub">Ingresá con tu email y contraseña.</p>
+
+    <form id="login-form" novalidate>
+      <label for="l-email">Email</label>
+      <input type="email" id="l-email" autocomplete="username" required>
+      <label for="l-pass">Contraseña</label>
+      <input type="password" id="l-pass" autocomplete="current-password" required>
+      <p class="login-err" id="login-err" role="alert"></p>
+      <button class="btn btn-pri" type="submit" id="l-go">Entrar</button>
+      <button class="login-link" type="button" id="l-forgot">Olvidé mi contraseña</button>
+    </form>
+
+    <form id="newpass-form" hidden novalidate>
+      <label for="np-pass">Nueva contraseña</label>
+      <input type="password" id="np-pass" autocomplete="new-password" minlength="8" required>
+      <p class="hint">Mínimo 8 caracteres.</p>
+      <p class="login-err" id="np-err" role="alert"></p>
+      <button class="btn btn-pri" type="submit">Guardar contraseña</button>
+    </form>
+  </div>
+</div>
+
+<header class="top"><div class="wrap">
+  <div><h1>Panel de control</h1><small>Tus propiedades publicadas</small></div>
+  <div class="top-acts">
+  <a class="link" href="index.html" target="_blank" rel="noopener">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span><span class="lbl-long">Ver </span>Galería</span>
+  </a>
+  <button class="link" id="logout" type="button" aria-label="Cerrar sesión">Salir</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <button class="profile" id="open-cfg" type="button" aria-label="Editar mi perfil y los textos de la galería">
+    <span id="pf-av-mini"></span>
+    <span class="info"><b id="pf-name">Tu Nombre</b><span>Mi perfil y textos de la galería</span></span>
+    <span class="go">Editar</span>
+  </button>
+  <div class="stats" id="stats" role="group" aria-label="Filtrar por estado"></div>
+  <div class="search"><input type="search" id="q" placeholder="Buscar por título, barrio o código" aria-label="Buscar"></div>
+  <section class="list" id="list"></section>
+  <p class="foot" id="foot"></p>
+</main>
+
+<button class="fab" id="new">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  Nueva propiedad
+</button>
+
+<!-- ============ EDITOR ============ -->
+<div class="editor" id="editor" role="dialog" aria-modal="true" aria-labelledby="ed-title">
+  <div class="ed-top"><div class="wrap">
+    <button class="ib" id="ed-close" aria-label="Cerrar sin guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="ed-title">Editar propiedad</h2>
+    <span style="width:40px"></span>
+  </div></div>
+
+  <form id="form" class="wrap" novalidate>
+    <fieldset>
+      <legend>Estado</legend>
+      <div class="preview-status" id="f-estado"></div>
+      <div style="margin-top:12px;clear:both">
+        <label for="f-etq">Etiqueta extra sobre la foto</label>
+        <select id="f-etq" name="etiqueta">
+          <option value="">Ninguna</option>
+          <option>Oportunidad</option>
+          <option>Bajó de precio</option>
+          <option>Exclusiva</option>
+          <option>Ideal inversión</option>
+          <option>Dueño directo</option>
+        </select>
+        <p class="hint">"Nuevo ingreso" se pone con el estado de arriba. En Vendida no se muestran etiquetas.</p>
+      </div>
+      <label class="check" style="margin-top:10px"><input type="checkbox" name="publicada"> Visible en la galería</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Fotos</legend>
+      <div class="photos" id="photos"></div>
+      <div class="url-row"><input type="url" id="ph-url" placeholder="o pegá el link de una foto"><button type="button" class="btn btn-ghost" id="ph-add">Agregar</button></div>
+      <p class="hint">La primera foto es la portada. Se achican y se suben solas a tu Supabase.</p>
+      <input type="file" id="ph-file" accept="image/*" multiple hidden>
+    </fieldset>
+
+    <fieldset>
+      <legend>Datos principales</legend>
+      <div class="grid">
+        <div class="full"><label for="f-titulo">Título</label><input type="text" id="f-titulo" name="titulo" required placeholder="Luminoso 3 ambientes con balcón"></div>
+        <div><label for="f-tipo">Tipo</label><select id="f-tipo" name="tipo"><option>Departamento</option><option>Casa</option><option>PH</option><option>Desarrollo en pozo</option><option>Terreno</option><option>Local</option></select></div>
+        <div><label for="f-codigo">Código</label><input type="text" id="f-codigo" name="codigo" readonly></div>
+        <div><label for="f-moneda">Moneda</label><select id="f-moneda" name="moneda"><option>USD</option><option>ARS</option></select></div>
+        <div><label for="f-precio" id="lbl-precio">Precio</label><input type="number" inputmode="numeric" id="f-precio" name="precio" min="0" required></div>
+        <div class="full"><label for="f-expensas">Expensas ($ / mes)</label><input type="number" inputmode="numeric" id="f-expensas" name="expensas" min="0"></div>
+      </div>
+    </fieldset>
+
+    <fieldset id="fs-pozo" hidden>
+      <legend>Desarrollo en pozo</legend>
+      <div class="grid">
+        <div><label for="pz-entrega">Entrega estimada</label><input type="text" id="pz-entrega" name="pz_entrega" placeholder="Diciembre 2027"></div>
+        <div><label for="pz-avance">Avance de obra (%)</label><input type="number" inputmode="numeric" id="pz-avance" name="pz_avance" min="0" max="100"></div>
+        <div class="full"><label for="pz-ambmax">Ambientes hasta</label><input type="number" inputmode="numeric" id="pz-ambmax" name="ambMax" min="0"><p class="hint">En "Características" poné los ambientes de la unidad más chica; acá la más grande.</p></div>
+        <div class="full"><label for="pz-fin">Financiación</label><input type="text" id="pz-fin" name="pz_fin" placeholder="30% de anticipo y el saldo en hasta 36 cuotas."></div>
+        <div class="full"><label for="pz-tipos">Unidades disponibles</label><textarea id="pz-tipos" name="pz_tipos" placeholder="Monoambiente | 38 | 98000&#10;2 ambientes | 52 | 132000"></textarea><p class="hint">Una por línea: tipología | m² | precio desde (USD).</p></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ubicación</legend>
+      <div class="grid">
+        <div class="full"><label for="f-dir">Dirección aproximada</label><input type="text" id="f-dir" name="direccion" placeholder="Gorriti al 4800"><p class="hint">Se muestra en la galería. Mejor la cuadra que el número exacto.</p></div>
+        <div class="full"><label for="f-zona">Provincia o zona</label><select id="f-zona" name="zona"></select><p class="hint">Es lo que usa el filtro de ubicación de la galería.</p></div>
+        <div><label for="f-barrio">Barrio o localidad</label><input type="text" id="f-barrio" name="barrio" list="dl-barrios" autocomplete="off"><datalist id="dl-barrios"></datalist></div>
+        <div><label for="f-ciudad">Ciudad</label><input type="text" id="f-ciudad" name="ciudad"></div>
+        <div><label for="f-lat">Latitud</label><input type="number" step="any" id="f-lat" name="lat"></div>
+        <div><label for="f-lng">Longitud</label><input type="number" step="any" id="f-lng" name="lng"></div>
+        <p class="hint full">Ubicación aproximada para el mapa. En Google Maps: clic derecho → copiar coordenadas.</p>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Características</legend>
+      <div class="grid">
+        <div><label for="f-amb">Ambientes</label><input type="number" inputmode="numeric" id="f-amb" name="ambientes" min="0"></div>
+        <div><label for="f-dor">Dormitorios</label><input type="number" inputmode="numeric" id="f-dor" name="dormitorios" min="0"></div>
+        <div><label for="f-ban">Baños</label><input type="number" inputmode="numeric" id="f-ban" name="banos" min="0"></div>
+        <div><label for="f-ant">Antigüedad (años)</label><input type="number" inputmode="numeric" id="f-ant" name="antiguedad" min="0"></div>
+        <div><label for="f-m2">m² totales</label><input type="number" inputmode="numeric" id="f-m2" name="m2" min="0"></div>
+        <div><label for="f-m2c">m² cubiertos</label><input type="number" inputmode="numeric" id="f-m2c" name="m2cub" min="0"></div>
+        <div class="full"><label for="f-disp">Disposición</label><select id="f-disp" name="disposicion"><option value="">—</option><option>Frente</option><option>Contrafrente</option><option>Lateral</option><option>Interno</option></select></div>
+        <label class="check full"><input type="checkbox" name="cochera"> Tiene cochera</label>
+        <label class="check full"><input type="checkbox" name="aptoCredito"> Apto crédito</label>
+        <div class="full"><label for="f-amen">Destacados</label><input type="text" id="f-amen" name="amenities" placeholder="Balcón, Pileta, Seguridad 24 h"><p class="hint">Separados por coma.</p></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Descripción y tour</legend>
+      <div class="grid">
+        <div class="full"><label for="f-desc">Descripción</label><textarea id="f-desc" name="descripcion"></textarea></div>
+        <div class="full"><label for="f-video">Link del tour en video</label><input type="url" id="f-video" name="video" placeholder="https://..."><p class="hint">YouTube (no listado), Vimeo o un archivo .mp4.</p></div>
+      </div>
+    </fieldset>
+
+    <button type="button" class="btn btn-danger" id="del">Eliminar propiedad</button>
+  </form>
+
+  <div class="ed-bar"><div class="wrap">
+    <button type="button" class="btn btn-ghost" id="ed-cancel">Cancelar</button>
+    <button type="submit" form="form" class="btn btn-pri">Guardar</button>
+  </div></div>
+</div>
+
+<!-- ============ MI PERFIL Y TEXTOS ============ -->
+<div class="editor" id="cfg" role="dialog" aria-modal="true" aria-labelledby="cfg-title">
+  <div class="ed-top"><div class="wrap">
+    <button class="ib" id="cfg-close" aria-label="Cerrar sin guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="cfg-title">Mi perfil y textos</h2>
+    <span style="width:40px"></span>
+  </div></div>
+
+  <form id="cfg-form" class="wrap" novalidate>
+    <fieldset>
+      <legend>Tu perfil</legend>
+      <div class="photo-edit">
+        <span id="cfg-av"></span>
+        <div class="btns">
+          <label class="btn btn-pri" for="cfg-file" style="display:flex;align-items:center">Subir foto</label>
+          <button type="button" class="btn btn-ghost" id="cfg-rmfoto">Quitar</button>
+        </div>
+        <input type="file" id="cfg-file" accept="image/*" hidden>
+      </div>
+      <p class="hint" style="margin-bottom:12px">Se ve arriba de la galería, en cada ficha y en el bloque "Hablemos". Mejor una foto cuadrada, de frente.</p>
+      <div class="grid">
+        <div class="full"><label for="c-nombre">Nombre</label><input type="text" id="c-nombre" name="nombre"></div>
+        <div class="full"><label for="c-rol">Cargo y matrícula</label><input type="text" id="c-rol" name="rol" placeholder="Corredora inmobiliaria · Mat. 1234"></div>
+        <div class="full"><label for="c-wa">Tu WhatsApp</label><input type="text" inputmode="tel" id="c-wa" name="whatsapp" placeholder="5491123456789"><p class="hint">549 + código de área + número, sin el 0 ni el 15. Ej: 5491123456789.</p></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Encabezado de la galería</legend>
+      <div class="grid">
+        <div class="full"><label for="c-tit">Título</label><input type="text" id="c-tit" name="titulo"></div>
+        <div class="full"><label for="c-sub">Subtítulo</label><input type="text" id="c-sub" name="subtitulo"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bloque "Hablemos"</legend>
+      <div class="grid">
+        <div class="full"><label for="c-at">Título al final del listado</label><input type="text" id="c-at" name="ayudaTitulo"></div>
+        <div class="full"><label for="c-atf">Título en cada ficha</label><input type="text" id="c-atf" name="ayudaTituloFicha"></div>
+        <div class="full"><label for="c-atx">Texto</label><textarea id="c-atx" name="ayudaTexto" style="min-height:90px"></textarea></div>
+        <div class="full"><label for="c-p1">Punto 1</label><input type="text" id="c-p1" name="p1"></div>
+        <div class="full"><label for="c-p2">Punto 2</label><input type="text" id="c-p2" name="p2"></div>
+        <div class="full"><label for="c-p3">Punto 3</label><input type="text" id="c-p3" name="p3"><p class="hint">Dejá un punto vacío para no mostrarlo.</p></div>
+        <div class="full"><label for="c-btn">Texto del botón</label><input type="text" id="c-btn" name="ayudaBoton"></div>
+      </div>
+    </fieldset>
+
+    <button type="button" class="btn btn-ghost" id="cfg-reset" style="width:100%">Volver a los textos originales</button>
+  </form>
+
+  <div class="ed-bar"><div class="wrap">
+    <button type="button" class="btn btn-ghost" id="cfg-cancel">Cancelar</button>
+    <button type="submit" form="cfg-form" class="btn btn-pri">Guardar</button>
+  </div></div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<!-- Supabase (versión fija) + tu conexión + datos de ejemplo + capa de datos + lógica del panel -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="store.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

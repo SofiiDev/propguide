@@ -1,0 +1,24 @@
+# Netlify publica la carpeta public/ tal cual (no hay que compilar nada).
+[build]
+  publish = "public"
+  command = ""
+
+# Atajo: tudominio.com/admin → panel de control
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+# El panel no tiene que aparecer en Google
+[[headers]]
+  for = "/admin*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# Seguridad básica para todo el sitio
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
