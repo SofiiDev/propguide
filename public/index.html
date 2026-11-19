@@ -1163,8 +1163,7 @@ function renderDetail(p){
 
     <section class="section">
       <h3>Ubicación</h3>
-      <div class="map"><iframe loading="lazy" title="Mapa de la zona"
-        src="https://www.openstreetmap.org/export/embed.html?bbox=${p.lng-d},${p.lat-d},${p.lng+d},${p.lat+d}&layer=mapnik"></iframe></div>
+      <div class="map"><iframe loading="lazy" title="Mapa de la zona" referrerpolicy="no-referrer-when-downgrade" src="${mapaSrc(p, d)}"></iframe></div>
       <p class="note">Ubicación aproximada. La dirección exacta se comparte al coordinar la visita.</p>
     </section>
 
@@ -1208,6 +1207,17 @@ function renderDetail(p){
   $('#t360')?.addEventListener('click', ()=>openModal(tour360HTML(p.tour360)));
   $('#detail .slides').addEventListener('click', e=>{ const i=e.target.dataset?.i; if(i!=null) abrirVisor(p.fotos, +i); });
   $('#visita')?.addEventListener('click', openSheet);
+}
+
+/* Mapa: busca la dirección (calle + barrio + localidad); si no hay, usa las coordenadas cargadas a mano */
+function mapaSrc(p, d){
+  const partes = [String(p.direccion || "").replace(/\s+al\s+(\d)/i, " $1"), p.barrio, p.ciudad]
+    .map(s => String(s || "").trim()).filter((s, i, a) => s && a.indexOf(s) === i);
+  if (partes.length && (p.direccion || !isFinite(p.lat))) {
+    return `https://maps.google.com/maps?q=${encodeURIComponent(partes.join(", ") + ", Argentina")}&z=15&output=embed`;
+  }
+  const lat = isFinite(p.lat) ? +p.lat : -34.6037, lng = isFinite(p.lng) ? +p.lng : -58.3816;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-d},${lat-d},${lng+d},${lat+d}&layer=mapnik&marker=${lat},${lng}`;
 }
 
 /* Tour 360° (Matterport, Ricoh, etc.) en pantalla completa */
