@@ -308,6 +308,15 @@ $('#imp-dir').onchange = async e=>{
 $('#imp-list').onchange = e=>{ const c = e.target.closest('[data-imp]'); if (c){ IMPORT[+c.dataset.imp].incluir = c.checked; renderImport(); } };
 
 /* ---------- Importar ---------- */
+const PROP_A_LA_VEZ = 3, FOTOS_A_LA_VEZ = 4;
+// Corre fn sobre cada elemento, con hasta n a la vez
+async function enParalelo(lista, n, fn){
+  let sig = 0;
+  await Promise.all(Array.from({ length: Math.min(n, lista.length) }, async () => { while (sig < lista.length) await fn(lista[sig++]); }));
+}
+// Redibuja la lista como mucho una vez por cuadro (con varias subidas a la vez se llama muy seguido)
+let pintando = false;
+function pintar(){ if (pintando) return; pintando = true; requestAnimationFrame(() => { pintando = false; renderImport(); }); }
 $('#imp-go').onclick = async ()=>{
   const items = IMPORT.filter(x => x.incluir);
   if (!items.length || importando) return;
@@ -316,31 +325,34 @@ $('#imp-go').onclick = async ()=>{
   // Códigos nuevos correlativos (NX-121, NX-122…) para las que no traen código
   let ultimo = Math.max(100, ...TODAS.map(p => parseInt(String(p.codigo).replace(/\D/g, ""), 10) || 0).filter(n => n < 100000));
   let ok = 0;
-  for (const x of items) {
+  // Se suben varias propiedades al mismo tiempo (PROP_A_LA_VEZ) y en cada una varias fotos en paralelo (FOTOS_A_LA_VEZ)
+  for (const x of items) if (!x.p.codigo) x.p.codigo = "NX-" + String(++ultimo).padStart(3, "0");
+  await enParalelo(items, PROP_A_LA_VEZ, async x => {
     try {
       const { operacion, ...datos } = x.p;
       const p = { ...datos, publicada: publicar, publicado: new Date().toISOString().slice(0, 10) };
-      if (!p.codigo) p.codigo = "NX-" + String(++ultimo).padStart(3, "0");
-      p.fotos = [];
-      const fotos = x.fotos.slice(0, tope);
-      for (let i = 0; i < fotos.length; i++) {
-        x.estadoImp = `Subiendo fotos ${i + 1} de ${fotos.length}…`; renderImport();
-        try { p.fotos.push(await Fotos.subir(fotos[i], "propiedades", { max: 1600 })); }
+      const fotos = x.fotos.slice(0, tope), subidas = new Array(fotos.length).fill(null);
+      let listas = 0;
+      x.estadoImp = `Subiendo fotos 0 de ${fotos.length}…`; pintar();
+      await enParalelo(fotos.map((f, i) => i), FOTOS_A_LA_VEZ, async i => {
+        try { subidas[i] = await Fotos.subir(fotos[i], "propiedades", { max: 1600 }); }
         catch (err) { console.error(err); x.avisos.push(`No se pudo subir ${fotos[i].name}`); }
-      }
+        x.estadoImp = `Subiendo fotos ${++listas} de ${fotos.length}…`; pintar();
+      });
+      p.fotos = subidas.filter(Boolean);           // mismo orden que en la carpeta
       if (x.video && Videos.entra(x.video) && !p.video) {
-        x.estadoImp = `Subiendo video (${(x.video.size / 1048576).toFixed(0)} MB)…`; renderImport();
+        x.estadoImp = `Subiendo video (${(x.video.size / 1048576).toFixed(0)} MB)…`; pintar();
         try { p.video = await Videos.subir(x.video); }
         catch (err) { console.error(err); x.avisos.push("No se pudo subir el video: " + err.message); }
       }
-      x.estadoImp = "Guardando…"; renderImport();
+      x.estadoImp = "Guardando…"; pintar();
       await Store.upsert(p);
       x.estadoImp = `✓ Importada como ${p.codigo}${publicar ? "" : " (oculta, para revisar)"}`; ok++;
     } catch (err) {
       console.error(err); x.estadoImp = "✕ " + err.message;
     }
-    x.incluir = false; renderImport();
-  }
+    x.incluir = false; pintar();
+  });
   importando = false; renderImport();
   $('#imp-go').textContent = "Listo"; $('#imp-go').disabled = true;
   await recargar();
