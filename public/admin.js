@@ -290,7 +290,7 @@ function renderProfile(){
   $('#pf-name').textContent = CFGA.nombre;
 }
 function fillCfg(c){
-  for (const k of ["nombre","rol","whatsapp","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio","legalTexto","legalCorredores"]) cfgForm[k].value = c[k] || "";
+  for (const k of ["nombre","rol","whatsapp","instagram","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio","legalTexto","legalCorredores"]) cfgForm[k].value = c[k] || "";
   [0,1,2].forEach(i => cfgForm["p"+(i+1)].value = (c.ayudaPuntos||[])[i] || "");
   cfgForm.popupActivo.checked = c.popupActivo !== false;
   for (const k of ["popupSegundos","popupTitulo","popupTexto","popupBoton"]) cfgForm[k].value = c[k] ?? "";
@@ -324,6 +324,7 @@ cfgForm.onsubmit = async e=>{
   const D = Config.DEFAULTS;
   const cfg = {
     nombre: d.nombre.trim() || D.nombre, rol: d.rol.trim(), whatsapp: wa, foto: cfgFoto,
+    instagram: (d.instagram || "").trim().replace(/^@?/, d.instagram.trim() ? "@" : ""),
     titulo: d.titulo.trim() || D.titulo, subtitulo: d.subtitulo.trim(),
     ayudaTitulo: d.ayudaTitulo.trim() || D.ayudaTitulo,
     ayudaTituloFicha: d.ayudaTituloFicha.trim() || D.ayudaTituloFicha,

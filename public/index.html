@@ -1434,6 +1434,25 @@ function datosFicha(p){
     p.banos && ["Baños", p.banos], ["Cochera", p.cochera ? (p.cochera > 1 ? p.cochera : "Sí") : "No"],
   ].filter(Boolean).slice(0, 6);
 }
+/* Logo de Nexia pasado a blanco (lo negro queda blanco, lo blanco transparente) y recortado */
+let LOGO_BLANCO = null;
+function logoBlanco(){
+  return LOGO_BLANCO ||= cargarImg("nexia-logo.png").then(img => {
+    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+    const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+    const d = x.getImageData(0, 0, c.width, c.height), px = d.data;
+    let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      const a = Math.round((255 - (px[i] * .3 + px[i+1] * .59 + px[i+2] * .11)) * px[i+3] / 255);
+      px[i] = px[i+1] = px[i+2] = 255; px[i+3] = a;
+      if (a > 24) { const p = i / 4, X = p % c.width, Y = (p / c.width) | 0; if (X < x0) x0 = X; if (X > x1) x1 = X; if (Y < y0) y0 = Y; if (Y > y1) y1 = Y; }
+    }
+    x.putImageData(d, 0, 0);
+    const out = document.createElement("canvas"); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+    out.getContext("2d").drawImage(c, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+    return out;
+  });
+}
 async function fichaImg(p, forma){
   const post = forma === "post", W = 1080, H = post ? 1350 : 1920, FH = post ? 540 : 980, M = 64;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -1481,13 +1500,25 @@ async function fichaImg(p, forma){
     x.fillStyle = '#fff'; x.font = `700 40px ${F}`; x.fillText(String(v), cx + 22, cy + 50);
     x.fillStyle = claro; x.font = `400 28px ${F}`; x.fillText(k, cx + 22, cy + 84);
   });
-  // Pie: contacto
-  const pie = H - (post ? 128 : 190);
+  // Pie: foto, nombre, Instagram y código + logo de Nexia abajo a la derecha
+  const pie = H - (post ? 150 : 210), av = post ? 92 : 112, ay = pie + (H - pie - av) / 2 + 6;
   x.fillStyle = 'rgba(255,255,255,.2)'; x.fillRect(M, pie, W - 2 * M, 2);
-  x.fillStyle = '#fff'; x.font = `600 42px ${F}`; x.fillText(CFG.nombre || "", M, pie + 62);
-  x.fillStyle = claro; x.font = `400 34px ${F}`;
-  const tel = telLindo(CFG.whatsapp);
-  x.fillText([tel && `WhatsApp ${tel}`, `Cód. ${p.codigo}`].filter(Boolean).join("  ·  "), M, pie + 108);
+  let tx = M;
+  if (CFG.foto) {
+    try {
+      const f = await cargarImg(CFG.foto), k = Math.max(av / f.width, av / f.height);
+      x.save(); x.beginPath(); x.arc(M + av / 2, ay + av / 2, av / 2, 0, Math.PI * 2); x.clip();
+      x.drawImage(f, M + (av - f.width * k) / 2, ay + (av - f.height * k) / 2, f.width * k, f.height * k); x.restore();
+      x.strokeStyle = 'rgba(255,255,255,.85)'; x.lineWidth = 4; x.beginPath(); x.arc(M + av / 2, ay + av / 2, av / 2, 0, Math.PI * 2); x.stroke();
+      tx = M + av + 28;
+    } catch {}
+  }
+  const logo = await logoBlanco().catch(() => null), lh = post ? 112 : 136, lw = logo ? logo.width * lh / logo.height : 0;
+  if (logo) x.drawImage(logo, W - M - lw, ay + (av - lh) / 2, lw, lh);
+  const ancho = W - M - lw - 32 - tx;
+  x.fillStyle = '#fff'; x.font = `600 ${post ? 40 : 44}px ${F}`; x.fillText(lineas(x, CFG.nombre || "", ancho, 1)[0] || "", tx, ay + av / 2 - 6);
+  x.fillStyle = claro; x.font = `400 ${post ? 30 : 34}px ${F}`;
+  x.fillText(lineas(x, [CFG.instagram, `Cód. ${p.codigo}`].filter(Boolean).join("  ·  "), ancho, 1)[0], tx, ay + av / 2 + (post ? 38 : 44));
   return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
 }
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
