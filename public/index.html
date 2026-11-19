@@ -353,6 +353,12 @@
   .news-err{color:#b3261e;font-size:14px;min-height:18px;margin:6px 0 4px}
   .news-legal{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
   .news-tasa{grid-column:1/-1}
+  .req{color:#b3261e;font-weight:600;white-space:nowrap}
+  .news-sug{margin-top:6px;font-size:13.5px;color:var(--ink)}
+  .news-sug button{color:var(--brand);font-weight:700;text-decoration:underline;padding:2px 0}
+  .finput.invalido{border-color:#b3261e}
+  .news-ok-chk.invalido{color:#b3261e}
+  .news-ok-chk.invalido input{outline:2px solid #b3261e;outline-offset:2px;border-radius:4px}
   .news-ok-chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:13px;line-height:1.4;color:var(--ink);cursor:pointer}
   .news-ok-chk input{width:20px;height:20px;margin-top:1px;accent-color:var(--brand);flex:none}
   .news-ley{margin-top:8px;font-size:12px;line-height:1.45;color:var(--muted)}
@@ -530,8 +536,9 @@
     <h3 id="news-title"></h3>
     <p id="news-text"></p>
     <form id="news-form" novalidate>
-      <label class="flbl" for="news-email">Tu email</label>
-      <input class="finput" id="news-email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@email.com" required>
+      <label class="flbl" for="news-email">Tu email <span class="req" aria-hidden="true">*</span></label>
+      <input class="finput" id="news-email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nombre@email.com" required aria-required="true" aria-describedby="news-sug">
+      <p class="news-sug" id="news-sug" hidden></p>
       <fieldset class="news-ints" id="news-ints">
         <legend class="flbl">¿Qué te interesa? <span style="font-weight:400">(podés elegir varias)</span></legend>
         <label class="news-chk"><input type="checkbox" value="Quiero vender"><span>Quiero vender</span></label>
@@ -542,7 +549,7 @@
         <label class="news-chk news-tasa"><input type="checkbox" value="¿Cuánto vale mi propiedad?"><span>¿Cuánto vale mi propiedad?</span></label>
       </fieldset>
       <input type="text" name="web" id="news-web" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
-      <label class="news-ok-chk"><input type="checkbox" id="news-acepto"><span>Acepto recibir novedades por email y el tratamiento de mis datos según la Ley 25.326 de Protección de Datos Personales.</span></label>
+      <label class="news-ok-chk" id="news-acepto-lbl"><input type="checkbox" id="news-acepto" required aria-required="true"><span>Acepto recibir novedades por email y el tratamiento de mis datos según la Ley 25.326 de Protección de Datos Personales, y la información legal de abajo. <span class="req">* Obligatorio</span></span></label>
       <p class="news-err" id="news-err" role="alert"></p>
       <button class="btn btn-pri" type="submit" id="news-go" style="width:100%"></button>
       <p class="news-legal">Solo te escribo con novedades. Podés pedir la baja cuando quieras y no comparto tu email.</p>
@@ -643,9 +650,9 @@
 
 <!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/config.js?v=20261119d"></script>
-<script src="/data.js?v=20261119d"></script>
-<script src="/store.js?v=20261119d"></script>
+<script src="/config.js?v=20261119e"></script>
+<script src="/data.js?v=20261119e"></script>
+<script src="/store.js?v=20261119e"></script>
 <script>
 /* =========================================================
    CONFIGURACIÓN
@@ -1462,11 +1469,47 @@ function marcarCerrado(){ if ($('#news-ok').hidden && newsEstado() !== "suscript
 $('#news-close').onclick = ()=>{ marcarCerrado(); closeSheet(); };
 $('#news-done').onclick = ()=>{ closeSheet(); renderList(); };
 $('#scrim').addEventListener('click', ()=>{ if ($('#news-sheet').classList.contains('open')) marcarCerrado(); }, true);
+/* Corrector de email: detecta dominios mal escritos (gmial.com, gmaill.com, hotmal.com…) */
+const DOMINIOS = ["gmail.com","hotmail.com","hotmail.com.ar","outlook.com","outlook.com.ar","yahoo.com","yahoo.com.ar","icloud.com","live.com","live.com.ar","msn.com","me.com","fibertel.com.ar","speedy.com.ar","arnet.com.ar"];
+function distancia(a, b){
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1),
+      i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1] ? d[i-2][j-2] + 1 : Infinity);
+  return d[a.length][b.length];
+}
+function sugerirEmail(email){
+  const m = String(email).trim().toLowerCase().match(/^([^@\s]+)@([^@\s]+)$/); if (!m) return "";
+  let dom = m[2].replace(/\.+$/, "").replace(/,/g, ".");
+  if (DOMINIOS.includes(dom)) return "";
+  if (!dom.includes(".")) dom += ".com";                       // "gmail" → "gmail.com"
+  let mejor = "", min = 3;
+  for (const d of DOMINIOS) { const k = distancia(dom, d); if (k < min) { min = k; mejor = d; } }
+  return mejor && mejor !== m[2] ? `${m[1]}@${mejor}` : "";
+}
+let sugIgnorada = "";
+function mostrarSug(){
+  const v = $('#news-email').value.trim(), sug = sugerirEmail(v), el = $('#news-sug');
+  el.hidden = !sug || sugIgnorada === v;
+  if (!el.hidden) {
+    const b = document.createElement('button'); b.type = 'button'; b.id = 'news-sug-ok'; b.textContent = sug;
+    el.replaceChildren('¿Quisiste decir ', b, '?');
+  }
+  return !el.hidden;
+}
+$('#news-email').addEventListener('blur', mostrarSug);
+$('#news-email').addEventListener('input', ()=>{ $('#news-sug').hidden = true; $('#news-email').classList.remove('invalido'); });
+$('#news-sug').addEventListener('click', e=>{ if (!e.target.closest('#news-sug-ok')) return;
+  $('#news-email').value = e.target.textContent; $('#news-sug').hidden = true; $('#news-err').textContent = ""; });
+$('#news-acepto').addEventListener('change', ()=>{ $('#news-acepto-lbl').classList.remove('invalido'); if ($('#news-acepto').checked) $('#news-err').textContent = ""; });
 $('#news-form').onsubmit = async e=>{
   e.preventDefault();
   const email = $('#news-email').value.trim();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('#news-err').textContent = "Revisá el email, parece incompleto."; $('#news-email').focus(); return; }
-  if (!$('#news-acepto').checked){ $('#news-err').textContent = "Para anotarte, marcá que aceptás recibir novedades."; $('#news-acepto').focus(); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('#news-err').textContent = "Revisá el email, parece incompleto."; $('#news-email').classList.add('invalido'); $('#news-email').focus(); return; }
+  // Primera vez con un dominio sospechoso: avisar. Si lo manda igual, se respeta.
+  if (sugIgnorada !== email && mostrarSug()){ sugIgnorada = email; $('#news-err').textContent = "Revisá el email: puede tener un error de tipeo. Si está bien, tocá el botón de nuevo."; return; }
+  if (!$('#news-acepto').checked){ $('#news-err').textContent = "Para anotarte tenés que aceptar los términos (campo obligatorio)."; $('#news-acepto-lbl').classList.add('invalido'); $('#news-acepto').focus(); return; }
   if ($('#news-web').value) { $('#news-form-wrap').hidden = true; $('#news-ok').hidden = false; return; }   // robot: no se guarda
   const btn = $('#news-go'); btn.disabled = true; btn.textContent = "Enviando…";
   try {
