@@ -344,10 +344,17 @@
   .news-link svg{width:18px;height:18px}
   .share-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-bottom:6px}
   .sh.busy{opacity:.55;pointer-events:none}
-  .story-box{display:flex;gap:14px;align-items:flex-start;margin:4px 0 14px}
-  .story-box img{width:96px;aspect-ratio:9/16;object-fit:cover;border-radius:10px;flex:none;background:var(--line)}
-  .story-box ol{padding-left:18px;font-size:14px;line-height:1.45;color:var(--ink)}
-  .story-box li+li{margin-top:6px}
+  .img-fmt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}
+  .img-fmt button{min-height:52px;border:1.5px solid var(--line);border-radius:12px;font-weight:500;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+  .img-fmt button small{font-size:12px;color:var(--muted);font-weight:400}
+  .img-fmt button[aria-pressed="true"]{border-color:var(--brand);background:#ecf5f2;color:var(--brand);font-weight:600}
+  .img-prev{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:min(40vh,320px);margin-bottom:12px;padding:10px;border-radius:12px;background:var(--bg)}
+  .img-prev{overflow:hidden}
+  .img-prev img{height:100%;width:auto;max-width:100%;object-fit:contain;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+  .img-prev img:not([src]){display:none}
+  #img-wait{position:absolute;font-size:14px;color:var(--muted)}
+  #img-wait[hidden]{display:none}
+  .img-hint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
   .sh{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:84px;padding:8px 2px;border-radius:14px;font-size:13px;font-weight:500;text-decoration:none;color:var(--ink)}
   .sh:active{background:var(--bg)}
   .sh i{width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
@@ -524,20 +531,17 @@
 </div>
 
 <!-- Bottom sheet: compartir -->
-<div class="sheet" id="story-sheet" role="dialog" aria-modal="true" aria-labelledby="story-title">
+<div class="sheet" id="img-sheet" role="dialog" aria-modal="true" aria-labelledby="img-title">
   <div class="grab"></div>
-  <h3 id="story-title">Subila a tu historia</h3>
-  <div class="story-box">
-    <img id="story-prev" alt="Vista previa de la historia">
-    <ol id="story-pasos">
-      <li>Tocá <b>Guardar y abrir Instagram</b>.</li>
-      <li>En la cámara de historias, elegí la imagen de tu galería (es la última).</li>
-      <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>
-    </ol>
+  <h3 id="img-title">Exportar como imagen</h3>
+  <p>Una ficha con foto, precio y datos, lista para subir a Instagram, WhatsApp o donde quieras.</p>
+  <div class="img-fmt" role="group" aria-label="Formato">
+    <button type="button" data-f="story" aria-pressed="true">Historia<small>9:16</small></button>
+    <button type="button" data-f="post" aria-pressed="false">Publicación<small>4:5</small></button>
   </div>
-  <button class="btn btn-pri" id="story-save" type="button" style="width:100%">Guardar y abrir Instagram</button>
-  <button class="btn btn-sec" id="story-share" type="button" style="width:100%;margin-top:8px" hidden>Compartir con otras apps</button>
-  <a class="btn btn-sec" id="story-open" href="instagram://story-camera" style="width:100%;margin-top:8px" hidden>2 · Abrir Instagram</a>
+  <div class="img-prev"><img id="img-prev" alt="Vista previa de la imagen"><span id="img-wait">Armando la imagen…</span></div>
+  <button class="btn btn-pri" id="img-save" type="button" style="width:100%">Descargar imagen</button>
+  <p class="img-hint" id="img-hint">Queda en la carpeta Descargas / Galería de tu celular.</p>
 </div>
 
 <div class="sheet" id="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">
@@ -557,9 +561,9 @@
       <i class="lg-ig"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="#fff" stroke="none"/></svg></i>
       Instagram
     </button>
-    <button class="sh" id="sh-story" type="button">
-      <i class="lg-ig story"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke-dasharray="3.2 2.2"/><path d="M12 8.5v7M8.5 12h7"/></svg></i>
-      Historia
+    <button class="sh" id="sh-img" type="button">
+      <i style="background:var(--brand)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m20.5 15-4.5-4.5L6 20.5"/></svg></i>
+      Imagen
     </button>
     <button class="sh" id="sh-copy" type="button">
       <i style="background:#4a453d"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></i>
@@ -1265,7 +1269,7 @@ function videoHTML(url){
 
 /* Bottom sheet */
 function openSheet(){ franja=""; document.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed','false')); $('#sheet-go').href = waLink(actual,'visita'); $('#scrim').classList.add('open'); $('#sheet').classList.add('open'); }
-function closeSheet(){ $('#scrim').classList.remove('open'); ['#sheet','#share-sheet','#story-sheet','#busca-sheet','#filtros-sheet','#news-sheet'].forEach(s=>$(s).classList.remove('open')); }
+function closeSheet(){ $('#scrim').classList.remove('open'); ['#sheet','#share-sheet','#img-sheet','#busca-sheet','#filtros-sheet','#news-sheet'].forEach(s=>$(s).classList.remove('open')); }
 
 /* =========================================================
    "TE AYUDO A ENCONTRAR TU PROPIEDAD"
@@ -1402,12 +1406,11 @@ function openShare(p){
   $('#sh-wa').href = `https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`;
   $('#sh-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
   $('#sh-more').hidden = !navigator.share;
-  // La imagen de la historia se arma al abrir el menú, así al tocar "Historia" se comparte al instante
-  shareData.story = historiaPNG(p).catch(()=>null);
+  shareData.p = p; shareData.imgs = {};
   $('#scrim').classList.add('open'); $('#share-sheet').classList.add('open');
 }
 
-/* Imagen para historia de Instagram (1080×1920): foto, tipo, título, precio y quién la ofrece */
+/* Ficha como imagen: Historia 1080×1920 o Publicación 1080×1350 */
 function cargarImg(src){
   return new Promise((ok, mal)=>{ const i = new Image(); i.crossOrigin = "anonymous"; i.onload = ()=>ok(i); i.onerror = mal; i.src = src; });
 }
@@ -1418,18 +1421,32 @@ function lineas(ctx, texto, ancho, max){
   if (out.length > max){ out.length = max; out[max-1] = out[max-1].replace(/\s*\S+$/, "") + "…"; }
   return out;
 }
-async function historiaPNG(p){
-  const W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
-  const x = c.getContext('2d'), F = 'Hind, system-ui, sans-serif', verde = '#135d4e';
-  try { await Promise.all([400,600,700].map(w=>document.fonts.load(`${w} 40px Hind`))); } catch {}
+function telLindo(n){
+  const d = String(n || "").replace(/\D/g, "");
+  const m = d.match(/^549(11|\d{3,4})(\d+)$/);
+  return m ? `+54 9 ${m[1]} ${m[2].slice(0, -4)}-${m[2].slice(-4)}` : (d ? "+" + d : "");
+}
+function datosFicha(p){
+  if (isPozo(p)) return [["Superficie", m2Rango(p)], ["Ambientes", ambTexto(p)], p.pozo?.entrega && ["Entrega", p.pozo.entrega]].filter(Boolean);
+  return [
+    p.m2 && ["Sup. total", `${p.m2} m²`], p.m2cub && ["Sup. cubierta", `${p.m2cub} m²`],
+    p.ambientes && ["Ambientes", p.ambientes], p.dormitorios && ["Dormitorios", p.dormitorios],
+    p.banos && ["Baños", p.banos], ["Cochera", p.cochera ? (p.cochera > 1 ? p.cochera : "Sí") : "No"],
+  ].filter(Boolean).slice(0, 6);
+}
+async function fichaImg(p, forma){
+  const post = forma === "post", W = 1080, H = post ? 1350 : 1920, FH = post ? 540 : 980, M = 64;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'), F = 'Hind, system-ui, sans-serif', verde = '#135d4e', claro = 'rgba(255,255,255,.75)';
+  try { await Promise.all([400,500,600,700].map(w=>document.fonts.load(`${w} 40px Hind`))); } catch {}
   x.fillStyle = verde; x.fillRect(0, 0, W, H);
-  // Foto (recortada para llenar la parte de arriba)
-  const FH = 1180;
+  const caja = (cx, cy, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(cx, cy, w, h, r); else x.rect(cx, cy, w, h); x.fill(); };
+  // Foto
   try {
     const img = await cargarImg(p.fotos[0]);
     const k = Math.max(W / img.width, FH / img.height), w = img.width * k, h = img.height * k;
-    x.save(); x.beginPath(); x.rect(0, 0, W, FH); x.clip();
     const gris = p.estado === "reservada" || p.estado === "vendida";
+    x.save(); x.beginPath(); x.rect(0, 0, W, FH); x.clip();
     if (gris && "filter" in x) x.filter = "grayscale(1) brightness(.9)";
     x.drawImage(img, (W - w) / 2, (FH - h) / 2, w, h); x.restore();
     if (gris && !("filter" in x)) {
@@ -1438,83 +1455,75 @@ async function historiaPNG(p){
       x.putImageData(d, 0, 0);
     }
   } catch { x.fillStyle = '#c9bfae'; x.fillRect(0, 0, W, FH); }
-  const g = x.createLinearGradient(0, FH - 260, 0, FH); g.addColorStop(0, 'rgba(19,93,78,0)'); g.addColorStop(1, verde);
-  x.fillStyle = g; x.fillRect(0, FH - 260, W, 260);
+  const g = x.createLinearGradient(0, FH - 200, 0, FH); g.addColorStop(0, 'rgba(19,93,78,0)'); g.addColorStop(1, verde);
+  x.fillStyle = g; x.fillRect(0, FH - 200, W, 200);
   // Etiqueta de estado
-  const etiqueta = p.estado === "reservada" ? "RESERVADA" : p.estado === "vendida" ? "VENDIDA" : p.estado === "nueva" ? "NUEVO INGRESO" : "";
-  if (etiqueta){
-    x.font = `700 40px ${F}`; const tw = x.measureText(etiqueta).width + 64;
-    x.fillStyle = p.estado === "nueva" ? '#f5c400' : 'rgba(30,30,30,.8)'; x.beginPath(); if (x.roundRect) x.roundRect(64, 140, tw, 76, 38); else x.rect(64, 140, tw, 76); x.fill();
-    x.fillStyle = p.estado === "nueva" ? '#1c1c1c' : '#fff'; x.textBaseline = 'middle'; x.fillText(etiqueta, 96, 180);
+  const etiqueta = { reservada: "RESERVADA", vendida: "VENDIDA", nueva: "NUEVO INGRESO" }[p.estado];
+  if (etiqueta) {
+    const py = post ? 48 : 120; x.font = `700 36px ${F}`; const tw = x.measureText(etiqueta).width + 56;
+    x.fillStyle = p.estado === "nueva" ? '#f5c400' : 'rgba(30,30,30,.82)'; caja(M, py, tw, 68, 34);
+    x.fillStyle = p.estado === "nueva" ? '#1c1c1c' : '#fff'; x.textBaseline = 'middle'; x.fillText(etiqueta, M + 28, py + 36); x.textBaseline = 'alphabetic';
   }
   // Textos
-  x.textBaseline = 'alphabetic'; x.fillStyle = 'rgba(255,255,255,.78)'; x.font = `600 44px ${F}`;
-  let y = FH + 30;
-  lineas(x, textoKind(p).toUpperCase(), W - 128, 1).forEach(l=>{ x.fillText(l, 64, y); });
-  y += 130; x.fillStyle = '#fff'; x.font = `700 120px ${F}`; x.fillText(precioTxt(p), 64, y);
-  y += 100; x.font = `500 58px ${F}`;
-  lineas(x, p.titulo, W - 128, 2).forEach(l=>{ x.fillText(l, 64, y); y += 72; });
-  y += 4; x.fillStyle = 'rgba(255,255,255,.78)'; x.font = `400 44px ${F}`;
-  x.fillText([p.barrio, p.ciudad].filter(Boolean).join(", "), 64, y);
-  // Pie: quién la ofrece + invitación a tocar el link
-  x.fillStyle = 'rgba(255,255,255,.14)'; x.fillRect(64, H - 250, W - 128, 2);
-  x.fillStyle = '#fff'; x.font = `600 46px ${F}`; x.fillText(CFG.nombre || "", 64, H - 160);
-  x.fillStyle = 'rgba(255,255,255,.78)'; x.font = `400 38px ${F}`; x.fillText("Tocá el link para ver fotos, video y consultar", 64, H - 100);
-  return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9));
+  let y = FH + (post ? 20 : 40);
+  x.fillStyle = claro; x.font = `600 38px ${F}`; x.fillText(lineas(x, textoKind(p).toUpperCase(), W - 2 * M, 1)[0], M, y);
+  y += post ? 100 : 120; x.fillStyle = '#fff'; x.font = `700 ${post ? 96 : 112}px ${F}`; x.fillText(precioTxt(p), M, y);
+  if (p.expensas && !post) { x.fillStyle = claro; x.font = `400 36px ${F}`; y += 56; x.fillText(`Expensas $ ${fmt(p.expensas)}`, M, y); }
+  y += post ? 64 : 84; x.fillStyle = '#fff'; x.font = `500 ${post ? 44 : 50}px ${F}`;
+  lineas(x, p.titulo, W - 2 * M, 2).forEach(l => { x.fillText(l, M, y); y += post ? 54 : 62; });
+  x.fillStyle = claro; x.font = `400 38px ${F}`; x.fillText([p.barrio, p.ciudad].filter(Boolean).join(", "), M, y);
+  // Datos en grilla de 3 columnas
+  const datos = datosFicha(p), colW = (W - 2 * M) / 3, filaH = 112;
+  y += post ? 36 : 64;
+  datos.forEach(([k, v], i) => {
+    const cx = M + (i % 3) * colW, cy = y + Math.floor(i / 3) * filaH;
+    x.fillStyle = 'rgba(255,255,255,.1)'; caja(cx, cy, colW - 14, filaH - 14, 18);
+    x.fillStyle = '#fff'; x.font = `700 40px ${F}`; x.fillText(String(v), cx + 22, cy + 50);
+    x.fillStyle = claro; x.font = `400 28px ${F}`; x.fillText(k, cx + 22, cy + 84);
+  });
+  // Pie: contacto
+  const pie = H - (post ? 128 : 190);
+  x.fillStyle = 'rgba(255,255,255,.2)'; x.fillRect(M, pie, W - 2 * M, 2);
+  x.fillStyle = '#fff'; x.font = `600 42px ${F}`; x.fillText(CFG.nombre || "", M, pie + 62);
+  x.fillStyle = claro; x.font = `400 34px ${F}`;
+  const tel = telLindo(CFG.whatsapp);
+  x.fillText([tel && `WhatsApp ${tel}`, `Cód. ${p.codigo}`].filter(Boolean).join("  ·  "), M, pie + 108);
+  return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
 }
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-function copiarYa(texto){
-  // Copia sin esperar (para no perder el "toque" que necesita el menú de compartir del celular)
-  const t = document.createElement('textarea'); t.value = texto; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
-  document.body.appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, texto.length);
-  let ok = false; try { ok = document.execCommand('copy'); } catch {} t.remove();
-  if (!ok) navigator.clipboard?.writeText(texto).catch(()=>{});
-  return ok;
+let imgFmt = "story";
+async function prepararImg(){
+  const p = shareData.p, key = imgFmt;
+  $('#img-save').disabled = true; $('#img-wait').hidden = false; $('#img-wait').textContent = "Armando la imagen…"; $('#img-prev').removeAttribute('src');
+  shareData.imgs[key] ||= fichaImg(p, key).then(blob => blob && {
+    blob, url: URL.createObjectURL(blob),
+    file: new File([blob], `${p.codigo}-${key === "post" ? "publicacion" : "historia"}.jpg`, { type: 'image/jpeg' }),
+  }).catch(() => null);
+  const r = await shareData.imgs[key];
+  if (key !== imgFmt) return;                       // cambió de formato mientras se armaba
+  if (r) { $('#img-prev').src = r.url; $('#img-wait').hidden = true; $('#img-save').disabled = false; }
+  else $('#img-wait').textContent = "No pude armar la imagen";
 }
-$('#sh-story').onclick = async ()=>{
-  const btn = $('#sh-story'); btn.classList.add('busy');
-  try {
-    const blob = await shareData.story;
-    if (!blob) { toast("No pude armar la imagen. Probá de nuevo."); return; }
-    const file = new File([blob], `propiedad-${(shareData.title||"").slice(0,30).replace(/\W+/g,"-")}.jpg`, { type: 'image/jpeg' });
-    if (shareData.storyUrl) URL.revokeObjectURL(shareData.storyUrl);
-    shareData.storyFile = file; shareData.storyUrl = URL.createObjectURL(blob);
-    $('#story-prev').src = shareData.storyUrl;
-    const ios = IOS && navigator.canShare?.({ files: [file] });
-    $('#story-save').textContent = ios ? "1 · Guardar imagen" : "Guardar y abrir Instagram";
-    $('#story-open').hidden = !ios;
-    $('#story-share').hidden = ios || !navigator.canShare?.({ files: [file] });
-    $('#story-pasos').innerHTML = ios
-      ? `<li>Tocá <b>Guardar imagen</b> y en el menú elegí <b>Guardar imagen</b> (o directamente Instagram).</li>
-         <li>Tocá <b>Abrir Instagram</b> y elegí la foto desde la cámara de historias.</li>
-         <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>`
-      : `<li>Tocá <b>Guardar y abrir Instagram</b>.</li>
-         <li>En la cámara de historias, elegí la imagen de tu galería (es la última).</li>
-         <li>Agregá el sticker <b>Enlace</b> y pegá el link: ya está copiado.</li>`;
-    $('#share-sheet').classList.remove('open'); $('#story-sheet').classList.add('open');
-  } catch { toast("No pude armar la imagen. Probá de nuevo."); }
-  finally { btn.classList.remove('busy'); }
+$('#sh-img').onclick = ()=>{
+  $('#share-sheet').classList.remove('open'); $('#img-sheet').classList.add('open');
+  $('#img-hint').textContent = IOS ? "En el menú que se abre, elegí «Guardar imagen» y queda en Fotos." : "Queda en la carpeta Descargas / Galería de tu celular.";
+  prepararImg();
 };
-// Funciona en cualquier celular: guarda la imagen en la galería y abre la cámara de historias de Instagram
-$('#story-save').onclick = async ()=>{
-  const copiado = copiarYa(shareData.url);
-  if (!$('#story-open').hidden) {   // iPhone: el menú de compartir tiene "Guardar imagen" (va a Fotos)
-    try { await navigator.share({ files: [shareData.storyFile] }); toast("Listo. Ahora tocá «Abrir Instagram»"); }
-    catch (e) { if (e.name !== "AbortError") toast("No se pudo abrir el menú. Probá de nuevo."); }
+$('#img-sheet .img-fmt').onclick = e => {
+  const b = e.target.closest('button[data-f]'); if (!b) return;
+  imgFmt = b.dataset.f; document.querySelectorAll('.img-fmt button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  prepararImg();
+};
+$('#img-save').onclick = async ()=>{
+  const r = await shareData.imgs[imgFmt]; if (!r) return;
+  // iPhone: la descarga iría a "Archivos"; el menú de compartir tiene "Guardar imagen" (va a Fotos)
+  if (IOS && navigator.canShare?.({ files: [r.file] })) {
+    try { await navigator.share({ files: [r.file] }); closeSheet(); } catch (e) { if (e.name !== "AbortError") toast("No se pudo guardar. Probá de nuevo."); }
     return;
   }
-  const a = document.createElement('a'); a.href = shareData.storyUrl; a.download = shareData.storyFile.name;
+  const a = document.createElement('a'); a.href = r.url; a.download = r.file.name;
   document.body.appendChild(a); a.click(); a.remove();
-  const celu = matchMedia('(pointer:coarse)').matches;
-  toast(celu ? "Imagen guardada. Abriendo Instagram…" : `Imagen descargada${copiado ? " y link copiado" : ""}: subila como historia desde el celular`);
-  closeSheet();
-  if (celu) setTimeout(()=>{ location.href = "instagram://story-camera"; }, 900);
-};
-$('#story-open').addEventListener('click', ()=> setTimeout(closeSheet, 300));
-$('#story-share').onclick = async ()=>{
-  copiarYa(shareData.url);
-  try { await navigator.share({ files: [shareData.storyFile] }); closeSheet(); toast("Agregá el sticker «Enlace» y pegá el link (ya está copiado)"); }
-  catch (e) { if (e.name !== "AbortError") toast("No se pudo compartir. Usá «Guardar y abrir Instagram»."); }
+  toast("Imagen descargada"); closeSheet();
 };
 async function copyLink(msg){
   try { await navigator.clipboard.writeText(shareData.url); toast(msg); }
