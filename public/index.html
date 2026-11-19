@@ -643,9 +643,9 @@
 
 <!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/config.js?v=20261119c"></script>
-<script src="/data.js?v=20261119c"></script>
-<script src="/store.js?v=20261119c"></script>
+<script src="/config.js?v=20261119d"></script>
+<script src="/data.js?v=20261119d"></script>
+<script src="/store.js?v=20261119d"></script>
 <script>
 /* =========================================================
    CONFIGURACIÓN
@@ -1432,6 +1432,10 @@ function newsEstado(){
   } catch { return ""; }
 }
 const guardarNews = estado => { try { localStorage.setItem(NEWS_KEY, JSON.stringify({ estado, t: Date.now() })); } catch {} };
+// Se muestra en la segunda interacción: abrir una ficha o tocar un botón de WhatsApp (lo que pase primero dos veces)
+let interacciones = 0;
+function contarInteraccion(){ interacciones++; if (interacciones === 2) programarNews(3); }
+document.addEventListener('click', e=>{ if (e.target.closest('a[href*="wa.me/"]')) contarInteraccion(); }, true);
 function programarNews(segundos){
   if (CFG.popupActivo === false || newsMostrado || newsEstado()) return;
   clearTimeout(newsTimer);
@@ -1440,6 +1444,8 @@ function programarNews(segundos){
 function abrirNews(origen){
   if (origen === "auto"){
     if (newsMostrado || newsEstado()) return;
+    // Si se fue a WhatsApp, se muestra cuando vuelve a la galería
+    if (document.hidden) { document.addEventListener('visibilitychange', function vuelve(){ if (document.hidden) return; document.removeEventListener('visibilitychange', vuelve); newsTimer = setTimeout(()=>abrirNews("auto"), 1200); }); return; }
     // No interrumpir si está usando otra ventana: reintenta en unos segundos
     if (document.querySelector('.sheet.open, .cmp-view.open, .modal.open')) { newsTimer = setTimeout(()=>abrirNews("auto"), 8000); return; }
   }
@@ -1678,7 +1684,7 @@ function route(){
   const m = location.hash.match(/^#\/p\/(.+)$/);
   const p = m && TODAS_P.find(x=>x.codigo===decodeURIComponent(m[1]));
   closeSheet(); closeModal();
-  if (p){ fichasVistas++; if (fichasVistas === 2) programarNews(4); document.body.classList.add('is-detail'); renderDetail(p); scrollTo(0,0); document.title = `${p.titulo} · ${precioTxt(p)}`; }
+  if (p){ fichasVistas++; contarInteraccion(); document.body.classList.add('is-detail'); renderDetail(p); scrollTo(0,0); document.title = `${p.titulo} · ${precioTxt(p)}`; }
   else { fromList = false; document.body.classList.remove('is-detail'); document.title = tituloOp(); requestAnimationFrame(()=>scrollTo(0,listScroll)); }
 }
 addEventListener('hashchange', route);
@@ -1695,6 +1701,8 @@ renderHero(); renderChips(); skeleton(); renderLegal();
     if (ALQ) $('#fs-precio-t').textContent = "Precio por mes";
     renderHero(); renderLegal(); renderChips(); renderList(); renderFavCount(); route();
     programarNews(CFG.popupSegundos);
+    // Link de prueba: tu-sitio/?novedades lo muestra siempre (aunque se haya cerrado antes)
+    if (new URLSearchParams(location.search).has("novedades")) { try { localStorage.removeItem(NEWS_KEY); } catch {} setTimeout(()=>abrirNews("prueba"), 600); }
   } catch (err) {
     console.error(err);
     $('#list').innerHTML =`<div class="empty">No pudimos cargar las propiedades.<br>Revisá tu conexión e intentá de nuevo.<br><button class="more" type="button" onclick="location.reload()">Reintentar</button></div>`;
