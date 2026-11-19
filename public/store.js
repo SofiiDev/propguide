@@ -158,6 +158,9 @@ const Config = {
       "Asesoramiento en la oferta, la negociación y la escritura",
     ],
     ayudaBoton: "Escribime por WhatsApp",
+    // Cuando un filtro no trae resultados. {zona} se reemplaza por la zona o barrio elegido.
+    ayudaTituloVacio: "¿No encontraste lo que buscabas?",
+    ayudaTextoVacio: "Te ofrezco un servicio de búsqueda integral en {zona}, con acceso a propiedades que todavía no salieron al mercado.",
   },
   async get() {
     if (MODO_DEMO) return { ...this.DEFAULTS, ...demo.get(this.DEMO_KEY, {}) };

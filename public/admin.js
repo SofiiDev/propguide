@@ -290,7 +290,7 @@ function renderProfile(){
   $('#pf-name').textContent = CFGA.nombre;
 }
 function fillCfg(c){
-  for (const k of ["nombre","rol","whatsapp","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton"]) cfgForm[k].value = c[k] || "";
+  for (const k of ["nombre","rol","whatsapp","titulo","subtitulo","ayudaTitulo","ayudaTituloFicha","ayudaTexto","ayudaBoton","ayudaTituloVacio","ayudaTextoVacio"]) cfgForm[k].value = c[k] || "";
   [0,1,2].forEach(i => cfgForm["p"+(i+1)].value = (c.ayudaPuntos||[])[i] || "");
   cfgFoto = c.foto || "";
   $('#cfg-av').innerHTML = avHTML(cfgFoto, c.nombre);
@@ -327,6 +327,8 @@ cfgForm.onsubmit = async e=>{
     ayudaTituloFicha: d.ayudaTituloFicha.trim() || D.ayudaTituloFicha,
     ayudaTexto: d.ayudaTexto.trim(), ayudaBoton: d.ayudaBoton.trim() || D.ayudaBoton,
     ayudaPuntos: [d.p1, d.p2, d.p3].map(s=>s.trim()),
+    ayudaTituloVacio: d.ayudaTituloVacio.trim() || D.ayudaTituloVacio,
+    ayudaTextoVacio: d.ayudaTextoVacio.trim() || D.ayudaTextoVacio,
   };
   try {
     await conEspera($('#cfg .ed-bar .btn-pri'), "Guardando…", ()=>Config.save(cfg));

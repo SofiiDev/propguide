@@ -900,7 +900,7 @@ function renderList(){
   $('#count').innerHTML = `<b>${n}</b> ${n===1?'propiedad':'propiedades'}`;
   const vacio = soloFavs && !favs.size
     ? `<div class="empty">Todavía no guardaste propiedades.<br>Tocá el ♥ en las que te gusten para encontrarlas acá.<br><button class="more" data-reset>Ver todas</button></div>`
-    : helperHTML(CFG.ayudaTitulo, "filtros")
+    : helperHTML(conZona(CFG.ayudaTituloVacio || CFG.ayudaTitulo), "filtros", conZona(CFG.ayudaTextoVacio))
       + `<button class="more empty-reset" type="button" data-reset>Ver todas las propiedades</button>`;
   $('#list').innerHTML = items.length ? items.map(card).join("") + helperHTML(CFG.ayudaTitulo, "lista") : vacio;
   $('#list').querySelectorAll('.card').forEach(c=>counterOn(c.querySelector('.slides'), c.querySelector('.counter')||{}));
@@ -1100,6 +1100,11 @@ function closeSheet(){ $('#scrim').classList.remove('open'); ['#sheet','#share-s
    Bloque al final del listado y de cada ficha + hoja que arma el WhatsApp
    ========================================================= */
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+// Reemplaza {zona} por el barrio o la zona elegidos en el filtro (si no eligieron, un genérico)
+function conZona(texto){
+  const lugar = F.barrio || F.zona || "la zona que buscás";
+  return String(texto || "").replaceAll("{zona}", lugar);
+}
 function helperHTML(titulo, desde, texto){
   const puntos = (CFG.ayudaPuntos || []).filter(s => s && s.trim());
   return `<section class="helper" aria-labelledby="helper-${desde}">
