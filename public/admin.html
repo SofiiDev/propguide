@@ -157,6 +157,15 @@
   /* Importador */
   .imp-pre{background:var(--bg);border-radius:12px;padding:12px;font-size:13px;line-height:1.5;overflow-x:auto;margin:10px 0;white-space:pre}
   .imp-res{font-weight:600;margin-bottom:8px}
+  .imp-drop{margin-top:12px;border:2px dashed var(--line);border-radius:14px;padding:22px 14px;text-align:center;display:grid;justify-items:center;gap:4px;color:var(--muted);transition:background .15s,border-color .15s}
+  .imp-drop svg{width:34px;height:34px;color:var(--brand)}
+  .imp-drop b{color:var(--ink);font-size:15px}
+  .imp-drop span{font-size:13px}
+  #imp.arrastrando .imp-drop,#imp.arrastrando #imp-list{border-color:var(--brand);background:#ecf5f2}
+  #imp.arrastrando #imp-list{outline:2px dashed var(--brand);outline-offset:4px;border-radius:14px}
+  .imp-sel{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .imp-sel .btn{min-height:40px;padding:0 14px;font-size:14px}
+  .imp-sel span{font-size:13px;color:var(--muted)}
   .imp-item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px}
   .imp-item.off{opacity:.6}
   .imp-chk{display:grid;place-items:center;width:32px;min-height:44px;flex:none}
@@ -375,8 +384,13 @@
       </fieldset>
       <fieldset>
         <legend>Elegí la carpeta</legend>
-        <p class="hint" style="clear:both;font-size:14px">Elegí la carpeta que contiene todas las propiedades (o una sola). Nada se sube hasta que lo confirmes.</p>
-        <label class="btn btn-pri" for="imp-dir" style="display:flex;align-items:center;justify-content:center;margin-top:12px;cursor:pointer">Elegir carpeta</label>
+        <p class="hint" style="clear:both;font-size:14px">Arrastrá una o varias carpetas de propiedades, o elegí la carpeta que las contiene a todas. Nada se sube hasta que lo confirmes.</p>
+        <div class="imp-drop" id="imp-drop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/></svg>
+          <b>Arrastrá acá las carpetas</b>
+          <span>Seleccioná varias en el Explorador con Ctrl o Shift y soltalas acá</span>
+        </div>
+        <label class="btn btn-pri" for="imp-dir" style="display:flex;align-items:center;justify-content:center;margin-top:12px;cursor:pointer">O elegir una carpeta</label>
         <input type="file" id="imp-dir" webkitdirectory directory multiple hidden>
         <p class="hint" id="imp-cargando" hidden style="margin-top:10px">Leyendo archivos…</p>
         <p class="hint" style="margin-top:10px">Funciona desde una computadora con Chrome, Edge o Firefox. También entiende la exportación de teamnexia (descripcion.txt, info.txt, fotos/ y video/).</p>
@@ -393,6 +407,11 @@
         <option value="0">Todas</option>
       </select>
       <p class="hint" style="margin:-6px 0 12px">Si no lo marcás, se importan <b>ocultas</b> para que las revises y las publiques con el ojo.</p>
+      <div class="imp-sel">
+        <button type="button" class="btn btn-ghost" id="imp-todas">Todas</button>
+        <button type="button" class="btn btn-ghost" id="imp-ninguna">Ninguna</button>
+        <span>o arrastrá más carpetas para sumarlas</span>
+      </div>
       <div id="imp-list"></div>
       <button class="btn btn-ghost" type="button" id="imp-otra" style="width:100%;margin-top:8px">Elegir otra carpeta</button>
     </section>

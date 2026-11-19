@@ -251,7 +251,7 @@ async function analizarCarpeta(files){
     if (!p.barrio) avisos.push("No se detectó el barrio");
     if (video && !Videos.entra(video)) avisos.push(`El video pesa ${(video.size / 1048576).toFixed(0)} MB (máx. ${Videos.MAX_MB}): subilo a YouTube y agregá "Video: link"`);
     if (p.codigo && TODAS.some(x => x.codigo === p.codigo)) avisos.push(`Ya existe ${p.codigo}: se va a actualizar con estos datos`);
-    lista.push({ ...g, p, video, avisos: [...bloqueos, ...avisos], incluir: !bloqueos.length, estadoImp: "" });
+    lista.push({ ...g, p, video, avisos: [...bloqueos, ...avisos], incluir: !bloqueos.length, bloqueada: bloqueos.length > 0, estadoImp: "" });
   }
   return lista.sort((a, b) => (b.incluir - a.incluir) || a.nombre.localeCompare(b.nombre, "es", { numeric: true }));
 }
@@ -295,16 +295,74 @@ $('#imp-close').onclick = cerrarImport;
 $('#imp-cancel').onclick = cerrarImport;
 $('#imp-otra').onclick = ()=>{ if (!importando){ IMPORT = []; renderImport(); } };
 $('#imp-maxfotos').onchange = renderImport;
-$('#imp-dir').onchange = async e=>{
-  const files = [...e.target.files]; e.target.value = "";
-  if (!files.length) return;
+// Lee los archivos elegidos o arrastrados. Con "sumar", agrega a la lista las carpetas que no estaban.
+async function cargarArchivos(files, sumar = false){
+  if (!files.length || importando) return;
   $('#imp-cargando').hidden = false;
-  try { IMPORT = await analizarCarpeta(files); }
-  catch (err){ console.error(err); toast("No se pudo leer la carpeta: " + err.message); IMPORT = []; }
+  let nuevas = [];
+  try { nuevas = await analizarCarpeta(files); }
+  catch (err){ console.error(err); toast("No se pudo leer la carpeta: " + err.message); }
   finally { $('#imp-cargando').hidden = true; }
-  if (!IMPORT.length) toast("No encontré propiedades: cada una tiene que estar en su carpeta, con fotos o un .txt");
+  if (sumar && IMPORT.length) {
+    const ya = new Set(IMPORT.map(x => x.carpeta || x.nombre));
+    const extra = nuevas.filter(x => !ya.has(x.carpeta || x.nombre));
+    IMPORT = IMPORT.concat(extra);
+    toast(extra.length ? `Sumé ${extra.length} ${extra.length === 1 ? "carpeta" : "carpetas"}` : "Esas carpetas ya estaban en la lista");
+  } else {
+    IMPORT = nuevas;
+    if (!IMPORT.length) toast("No encontré propiedades: cada una tiene que estar en su carpeta, con fotos o un .txt");
+  }
   renderImport();
-};
+}
+$('#imp-dir').onchange = e=>{ const files = [...e.target.files]; e.target.value = ""; cargarArchivos(files); };
+
+// Arrastrar carpetas: se recorren con webkitGetAsEntry y cada archivo lleva su ruta (como al elegir carpeta)
+async function archivosDeEntradas(entradas){
+  const files = [];
+  const leer = (e, base) => new Promise(async (ok, mal) => {
+    try {
+      if (e.isFile) {
+        const f = await new Promise((r, m) => e.file(r, m));
+        Object.defineProperty(f, "webkitRelativePath", { value: base + f.name });
+        files.push(f);
+      } else if (e.isDirectory) {
+        const lector = e.createReader();
+        for (;;) {
+          const lote = await new Promise((r, m) => lector.readEntries(r, m));
+          if (!lote.length) break;
+          for (const h of lote) await leer(h, base + e.name + "/");
+        }
+      }
+      ok();
+    } catch (err) { mal(err); }
+  });
+  for (const e of entradas) await leer(e, "");
+  return files;
+}
+const IMP = $('#imp');
+let arrastres = 0;
+const conArchivos = e => [...(e.dataTransfer?.types || [])].includes("Files");
+IMP.addEventListener('dragenter', e => { if (!conArchivos(e)) return; e.preventDefault(); arrastres++; IMP.classList.add('arrastrando'); });
+IMP.addEventListener('dragover', e => { if (!conArchivos(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = "copy"; });
+IMP.addEventListener('dragleave', () => { if (--arrastres <= 0) { arrastres = 0; IMP.classList.remove('arrastrando'); } });
+IMP.addEventListener('drop', async e => {
+  if (!conArchivos(e)) return;
+  e.preventDefault(); arrastres = 0; IMP.classList.remove('arrastrando');
+  if (importando) { toast("Esperá a que termine la importación"); return; }
+  // Las entradas hay que tomarlas ya, antes de cualquier await
+  const entradas = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry?.()).filter(Boolean);
+  const sumar = IMPORT.length > 0;
+  try {
+    const files = entradas.length ? await archivosDeEntradas(entradas) : [...e.dataTransfer.files];
+    await cargarArchivos(files, sumar);
+  } catch (err) { console.error(err); toast("No pude leer lo que arrastraste: " + err.message); }
+});
+// Que soltar fuera de la zona no abra la foto en el navegador
+window.addEventListener('dragover', e => { if (IMP.classList.contains('open')) e.preventDefault(); });
+window.addEventListener('drop', e => { if (IMP.classList.contains('open')) e.preventDefault(); });
+
+$('#imp-todas').onclick = ()=>{ if (importando) return; IMPORT.forEach(x => { if (!x.bloqueada && !String(x.estadoImp).startsWith("✓")) x.incluir = true; }); renderImport(); };
+$('#imp-ninguna').onclick = ()=>{ if (importando) return; IMPORT.forEach(x => x.incluir = false); renderImport(); };
 $('#imp-list').onchange = e=>{ const c = e.target.closest('[data-imp]'); if (c){ IMPORT[+c.dataset.imp].incluir = c.checked; renderImport(); } };
 
 /* ---------- Importar ---------- */
