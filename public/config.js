@@ -10,6 +10,6 @@
    MODO DEMO: usa propiedades de ejemplo y guarda todo en este navegador.
    ========================================================= */
 window.APP_CONFIG = {
-  SUPABASE_URL: "https://TU-PROYECTO.supabase.co",
-  SUPABASE_ANON_KEY: "TU_ANON_KEY",
+  SUPABASE_URL: "https://gpxxnookggyopjmyrxaq.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_mNCNCTQMnWseH-ad4wmO2A_Orv9CcGl",
 };
