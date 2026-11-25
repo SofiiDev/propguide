@@ -416,38 +416,94 @@
   .empty{text-align:center;padding:40px 16px;color:var(--muted)}
   :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
+  /* Barra superior e introducción: solo en computadora */
+  .topnav,.hero-eyebrow,.hero-agent,.hero-dt,.hero-ds{display:none}
+
   /* ================= DESKTOP (≥ 960 px) ================= */
   @media (min-width:960px){
     .wrap{max-width:1200px}
-    /* Encabezado tipo perfil: header bajo, foto grande a la izquierda, nombre al lado y selector a la derecha */
-    .hero{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"hd hd hd" "av t sw" "av s sw";
-      column-gap:24px;align-items:center;text-align:left;padding:24px 24px 18px}
+    :root{--gold:#b8923f}
+    body{background:#f7f5f1}
+    /* Barra superior fija */
+    .topnav{display:block;position:sticky;top:0;z-index:35;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid #ebe6de}
+    .tn-in{max-width:1200px;margin:0 auto;height:72px;padding:0 24px;display:flex;align-items:center;gap:40px}
+    .tn-logo img{height:44px;width:auto}
+    .tn-links{display:flex;gap:28px;flex:1}
+    .tn-links a{position:relative;color:#5d574f;text-decoration:none;font-weight:500;font-size:15px;padding:24px 0}
+    .tn-links a:hover{color:var(--ink)}
+    .tn-links a[aria-current]{color:var(--ink);font-weight:600}
+    .tn-links a[aria-current]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--brand)}
+    .tn-agent{display:flex;align-items:center;gap:12px}
+    .tn-av{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700}
+    .tn-agent span{display:flex;flex-direction:column;line-height:1.2}
+    .tn-agent b{font-size:14px}
+    .tn-agent small{font-size:12px;color:var(--muted)}
+    .tn-cta{display:flex;align-items:center;gap:8px;min-height:42px;padding:0 18px;border-radius:999px;background:var(--brand);color:#fff;text-decoration:none;font-weight:600;font-size:14px;margin-left:8px}
+    .tn-cta:hover{filter:brightness(1.08)}
+    .tn-cta svg{width:18px;height:18px}
+
+    /* Introducción: título grande a la izquierda y tarjeta del asesor a la derecha */
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"hd hd" "eb ag" "t ag" "s ag";column-gap:48px;align-items:end;text-align:left;padding:48px 24px 28px}
     .hero.con-hd{padding-top:0}
-    .hero-hd{grid-area:hd;aspect-ratio:auto;height:200px;max-height:none;margin:0 -24px 0;border-radius:0 0 20px 20px;overflow:hidden}
-    .hero .avatar{grid-area:av;width:136px;height:136px;margin:0;font-size:44px;align-self:start}
-    .hero.con-hd .avatar{margin-top:-56px}
-    .hero h1{grid-area:t;align-self:end;margin-top:14px;font-size:32px}
-    .hero > p{grid-area:s;align-self:start;margin-top:2px;font-size:16px}
-    .hero .op-sw{grid-area:sw;margin-top:0}
-    /* Tipos a la izquierda y filtros / favoritos / orden a la derecha, en una sola fila */
-    .filters{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;padding:4px 8px}
-    .chips.tipo{flex:1 1 auto;padding:10px 16px}
-    .chips.tipo .chip{flex:none;padding:0 18px}
-    .toolbar{flex:0 0 520px;padding:10px 16px}
-    .active-f{flex-basis:100%}
-    .list{grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:24px;padding:16px 24px 56px}
+    .hero-hd{grid-area:hd;aspect-ratio:auto;height:180px;max-height:none;margin:0 -24px 36px;border-radius:0 0 20px 20px;overflow:hidden}
+    .hero-hd:has(img[src$="header-nexia.jpg"]){display:none}
+    .hero.con-hd:has(.hero-hd img[src$="header-nexia.jpg"]){padding-top:48px}
+    .hero > .avatar,.hero .op-sw{display:none}
+    .hero .hero-eyebrow{display:block;grid-area:eb;font-size:12.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    .hero h1,.hero .hero-sub{display:none}
+    .hero .hero-dt{display:block;grid-area:t;font-size:46px;line-height:1.08;letter-spacing:-.02em;font-weight:700;color:var(--ink)}
+    .hero .hero-ds{display:block;grid-area:s;align-self:start;margin-top:12px;font-size:17px;color:var(--muted);max-width:560px}
+    .hero-agent{grid-area:ag;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center;align-self:end;background:#fff;border:1px solid #ebe6de;border-radius:20px;padding:20px;box-shadow:0 12px 32px rgba(32,28,20,.07)}
+    .ha-av{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:24px;box-shadow:0 0 0 3px #fff,0 0 0 4px #ebe6de}
+    .hero-agent b{display:block;font-size:18px}
+    .hero-agent small{display:block;color:var(--muted);font-size:13.5px;line-height:1.35;margin-top:2px}
+    .hero-agent .btn{grid-column:1/-1;margin-top:14px;min-height:48px}
+
+    /* Filtros: panel blanco flotante, fijo debajo de la barra superior */
+    .filters{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;padding:6px 10px;top:84px;margin:0 24px;background:#fff;border:1px solid #ebe6de;border-radius:16px;box-shadow:0 8px 24px rgba(32,28,20,.06)}
+    .chips.tipo{flex:1 1 auto;padding:8px 8px}
+    .chips.tipo .chip{flex:none;padding:0 18px;border-color:transparent;background:transparent;color:#5d574f}
+    .chips.tipo .chip:hover{background:#f4f1ec}
+    .chips.tipo .chip[aria-pressed="true"]{background:var(--brand);color:#fff}
+    .toolbar{flex:0 0 500px;padding:8px}
+    .active-f{flex-basis:100%;padding-bottom:8px}
+
+    /* Tarjetas: borde fino, foto más ancha y jerarquía de texto más limpia */
+    .card{box-shadow:none;border:1px solid #ebe6de;border-radius:16px;transition:transform .2s,box-shadow .2s}
+    .card:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(32,28,20,.12)}
+    .card .media{aspect-ratio:3/2}
+    .card .body{padding:18px 20px 16px}
+    .card .kind{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+    .card .kind span{color:var(--muted)}
+    .card .price{font-size:26px;margin-top:4px}
+    .card .title{font-size:16px;font-weight:600;color:var(--ink)}
+    .card .feats{border-top:1px solid #f0ece5;padding-top:12px;height:58px}
+    .card .card-foot{border-top-color:#f0ece5}
+    .list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:28px;padding:20px 24px 64px}
+    .count{padding-left:24px}
     .list > .helper,.list > .empty,.list > .no-res{grid-column:1/-1}
-    .card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.12)}
     .legal-foot{max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px}
 
     /* Ficha: fotos y detalle a la izquierda, panel con precio y contacto a la derecha */
-    body.is-detail #detail{display:grid;grid-template-columns:minmax(0,1fr) 380px;column-gap:32px;align-items:start;padding:76px 24px 56px}
+    body.is-detail #detail{display:grid;grid-template-columns:minmax(0,1fr) 380px;column-gap:40px;align-items:start;padding:0 24px 64px}
     #detail > *{grid-column:1}
-    #detail > .d-side{grid-column:2;grid-row:1 / span 60;position:sticky;top:76px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:6px 0 18px}
-    .topbar{background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:10px 24px}
-    .topbar .wrap{max-width:1200px;margin:0 auto}
+    #detail > .topbar{grid-column:1 / -1;grid-row:1;position:static;padding:16px 0;background:none;pointer-events:auto}
+    #detail > .topbar .wrap{max-width:none}
+    #detail > .topbar .iconbtn{box-shadow:none;border:1px solid #ebe6de}
+    #detail > .d-side{grid-column:2;grid-row:2 / span 60;position:sticky;top:96px;background:#fff;border:1px solid #ebe6de;border-radius:20px;box-shadow:0 16px 40px rgba(32,28,20,.08);padding:8px 0 20px}
+    .mosaic{position:relative;display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;height:480px;border-radius:20px;overflow:hidden;cursor:zoom-in}
+    .mosaic img{width:100%;height:100%;object-fit:cover;transition:filter .2s}
+    .mosaic img:first-of-type{grid-row:1 / span 2}
+    .mosaic img:hover{filter:brightness(.92)}
+    .mosaic img.err{visibility:hidden}
+    .mosaic .badges{position:absolute;top:16px;left:16px;z-index:2}
+    .mosaic .play-row{position:absolute;left:16px;bottom:16px;z-index:2}
+    .mosaic.st-reservada img,.mosaic.st-vendida img{filter:grayscale(1) brightness(.92)}
+    .mos-all{position:absolute;right:16px;bottom:16px;z-index:2;display:flex;align-items:center;gap:8px;min-height:42px;padding:0 16px;border-radius:999px;background:#fff;font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+    .mos-all svg{width:18px;height:18px}
     .gallery{aspect-ratio:16/10;border-radius:18px;overflow:hidden}
     .gallery .badges{top:16px !important}
+    .d-head .price{font-size:34px}
     .d-side .d-head{padding:16px 20px 8px}
     .d-side .cta{position:static;box-shadow:none;border:0;background:none;padding:8px 20px 0}
     .d-side .cta .wrap{flex-direction:column;gap:10px}
@@ -464,6 +520,9 @@
 <body>
 
 <!-- ================= LISTADO ================= -->
+<!-- Barra superior (solo en computadora) -->
+<header class="topnav" id="topnav"></header>
+
 <main id="list-view" class="wrap">
   <header class="hero" id="hero"></header>
 
@@ -704,9 +763,9 @@
 
 <!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/config.js?v=20261125b"></script>
-<script src="/data.js?v=20261125b"></script>
-<script src="/store.js?v=20261125b"></script>
+<script src="/config.js?v=20261125c"></script>
+<script src="/data.js?v=20261125c"></script>
+<script src="/store.js?v=20261125c"></script>
 <script>
 /* =========================================================
    CONFIGURACIÓN
@@ -729,10 +788,27 @@ function legalHTML(){
   </aside>`;
 }
 function renderLegal(){ $('#legal-foot').innerHTML = legalHTML(); }
+function renderTopnav(){
+  const wa = `https://wa.me/${WA()}?text=${encodeURIComponent(msgHablemos("inicio"))}`;
+  $('#topnav').innerHTML = `<div class="tn-in">
+    <a class="tn-logo" href="/" aria-label="Inicio"><img src="/nexia-logo-dark.png" alt="Nexia Team Inmobiliario" width="212" height="177"></a>
+    <nav class="tn-links" aria-label="Secciones">
+      <a href="/"${ALQ ? "" : ' aria-current="page"'}>Propiedades en venta</a>
+      <a href="/alquiler"${ALQ ? ' aria-current="page"' : ""}>En alquiler</a>
+    </nav>
+    <div class="tn-agent">${avatar("tn-av")}<span><b>${CFG.nombre}</b><small>Asesora inmobiliaria</small></span>
+      <a class="tn-cta" href="${wa}" target="_blank" rel="noopener">${ICON.wa}Contactame</a></div>
+  </div>`;
+}
 function renderHero(){
+  renderTopnav();
   const hd = Config.headerDe(CFG);
   $('#hero').classList.toggle("con-hd", !!hd);
-  $('#hero').innerHTML = `${hd ? `<div class="hero-hd"><picture>${hd === Config.HEADER_NEXIA ? `<source media="(min-width:960px)" srcset="/header-nexia-ancho.jpg">` : ""}<img src="${hd}" alt=""></picture></div>` : ""}${avatar()}<h1>${tituloOp()}</h1>${subtituloOp() ? `<p>${subtituloOp()}</p>` : ""}
+  $('#hero').innerHTML = `${hd ? `<div class="hero-hd"><picture>${hd === Config.HEADER_NEXIA ? `<source media="(min-width:960px)" srcset="/header-nexia-ancho.jpg">` : ""}<img src="${hd}" alt=""></picture></div>` : ""}${avatar()}<p class="hero-eyebrow">Nexia Team Inmobiliario</p>
+    <p class="hero-dt" role="heading" aria-level="2">${ALQ ? "Propiedades en alquiler" : "Propiedades en venta"}</p>
+    <p class="hero-ds">${ALQ ? "Departamentos, casas y oficinas en alquiler, con fotos, video y tour 360°." : "Departamentos, casas, PH y desarrollos seleccionados, con fotos, video y tour 360°."}</p><h1>${tituloOp()}</h1>${subtituloOp() ? `<p class="hero-sub">${subtituloOp()}</p>` : ""}
+    <aside class="hero-agent">${avatar("ha-av")}<div><b>${CFG.nombre}</b><small>${CFG.rol || ""}</small></div>
+      <a class="btn btn-wa" href="https://wa.me/${WA()}?text=${encodeURIComponent(msgHablemos("inicio"))}" target="_blank" rel="noopener">${ICON.wa}Escribime</a></aside>
     <nav class="op-sw" aria-label="Venta o alquiler"><a href="/"${ALQ ? "" : ' aria-current="page"'}>En venta</a><a href="/alquiler"${ALQ ? ' aria-current="page"' : ""}>En alquiler</a></nav>`;
 }
 
@@ -1229,7 +1305,16 @@ function renderDetail(p){
       </div>
     </div></div>
 
-    <div class="gallery st-${p.estado}">
+    ${DESK.matches && p.fotos.length >= 5 ? `<div class="mosaic st-${p.estado}">
+      ${veil(p.estado, p)}
+      ${p.fotos.slice(0,5).map((f,i)=>`<img src="${f}" alt="${p.titulo} – foto ${i+1}" data-i="${i}" onerror="this.classList.add('err')">`).join("")}
+      <div class="badges">${badges(p, true)}</div>
+      <div class="play-row">
+        ${p.video?`<button class="play-cta" id="play"><i>${ICON.play}</i>Video</button>`:""}
+        ${p.tour360?`<button class="play-cta" id="t360"><i>${ICON.t360}</i>Tour 360°</button>`:""}
+      </div>
+      <button class="mos-all" type="button" data-i="0">${ICON.cam}Ver las ${p.fotos.length} fotos</button>
+    </div>` : `<div class="gallery st-${p.estado}">
       ${veil(p.estado, p)}
       <div class="slides">${p.fotos.map((f,i)=>`<img src="${f}" alt="${p.titulo} – foto ${i+1}" loading="${i<2?'eager':'lazy'}" data-i="${i}" onerror="this.classList.add('err')">`).join("")}</div>
       <div class="badges" style="top:68px;right:16px">${badges(p, true)}</div>
@@ -1239,7 +1324,7 @@ function renderDetail(p){
         ${p.video?`<button class="play-cta" id="play"><i>${ICON.play}</i>Video</button>`:""}
         ${p.tour360?`<button class="play-cta" id="t360"><i>${ICON.t360}</i>Tour 360°</button>`:""}
       </div>
-    </div>
+    </div>`}
 
     <div class="d-side">
     <header class="d-head">
@@ -1362,7 +1447,7 @@ function renderDetail(p){
   $('#share').onclick = ()=> openShare(p);
   $('#play')?.addEventListener('click', ()=>openModal(videoHTML(p.video)));
   $('#t360')?.addEventListener('click', ()=>openModal(tour360HTML(p.tour360)));
-  $('#detail .slides').addEventListener('click', e=>{ const i=e.target.dataset?.i; if(i!=null) abrirVisor(p.fotos, +i); });
+  $('#detail .slides, #detail .mosaic')?.addEventListener('click', e=>{ const t=e.target.closest('[data-i]'); if(t) abrirVisor(p.fotos, +t.dataset.i); });
   $('#visita')?.addEventListener('click', openSheet);
 }
 
