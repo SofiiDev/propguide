@@ -287,7 +287,7 @@ form.onsubmit = async e=>{
       disponibleDesde: (d.disponibleDesde || "").trim(), contrato: (d.contrato || "").trim(), requisitos: (d.requisitos || "").trim() });
   } else ["mascotas","amueblado","disponibleDesde","contrato","requisitos"].forEach(k => delete p[k]);
   try {
-    await conEspera($('.ed-bar .btn-pri'), "Guardando…", ()=>Store.upsert(p));
+    await conEspera($('.ed-bar .btn-pri'), "Guardando…", ()=>Store.upsert(Texto.prop(p)));
     closeEditor(); await recargar(); toast(esNueva ? "Propiedad creada" : "Cambios guardados");
   } catch {}
 };

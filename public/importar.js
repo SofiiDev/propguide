@@ -250,7 +250,7 @@ async function analizarCarpeta(files){
     if (!p.barrio) avisos.push("No se detectó el barrio");
     if (video && !Videos.entra(video)) avisos.push(`El video pesa ${(video.size / 1048576).toFixed(0)} MB (máx. ${Videos.MAX_MB}): subilo a YouTube y agregá "Video: link"`);
     if (p.codigo && TODAS.some(x => x.codigo === p.codigo)) avisos.push(`Ya existe ${p.codigo}: se va a actualizar con estos datos`);
-    lista.push({ ...g, p, video, avisos: [...bloqueos, ...avisos], incluir: !bloqueos.length, bloqueada: bloqueos.length > 0, estadoImp: "" });
+    lista.push({ ...g, p: Texto.prop(p), video, avisos: [...bloqueos, ...avisos], incluir: !bloqueos.length, bloqueada: bloqueos.length > 0, estadoImp: "" });
   }
   return lista.sort((a, b) => (b.incluir - a.incluir) || a.nombre.localeCompare(b.nombre, "es", { numeric: true }));
 }

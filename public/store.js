@@ -280,3 +280,76 @@ function zonaDe(p) {
   if (/caba|capital federal/i.test(p.ciudad || "")) return "Capital Federal";
   return "";
 }
+
+/* ---------------- Textos uniformes ----------------
+   Direcciones, barrios y ciudades: cada palabra con mayúscula ("Paraguay 4800", "Tres de Febrero").
+   Títulos: tipo oración, con los lugares en mayúscula ("Departamento 3 ambientes en Palermo").
+   Descripción: solo se corrigen los renglones escritos todo en MAYÚSCULAS. */
+const Texto = {
+  CHICAS: new Set(["de","del","la","las","los","y","e","el","al","en","a","o","u","con","por","para","sin"]),
+  SIGLAS: new Set(["CABA","GBA","PH","UBA","UTN","SUM","USD","ARS","AMBA","CP"]),
+  sinTildes: s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(),
+  reEsc: s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+  // Más del 70 % de las letras en mayúscula
+  esMayus(s){ const l = String(s).match(/\p{L}/gu) || []; return l.length >= 4 && l.filter(c => c === c.toUpperCase() && c !== c.toLowerCase()).length / l.length > .7; },
+  palabra(w, primera){
+    const limpio = w.replace(/[^\p{L}\p{N}]/gu, "");
+    if (this.SIGLAS.has(limpio.toUpperCase())) return w.replace(limpio, limpio.toUpperCase());
+    if (/\d/.test(w)) return w.toLowerCase();
+    const min = w.toLowerCase();
+    if (!primera && this.CHICAS.has(limpio.toLowerCase())) return min;
+    return min.replace(/\p{L}/u, c => c.toUpperCase());
+  },
+  // "PARAGUAY 4800" / "defensa 1440" → "Paraguay 4800" · "Tres de febrero" → "Tres de Febrero"
+  nombre(s){
+    if (!s) return s;
+    return String(s).trim().split(/(\s+|,\s*|-)/).map((w, i) => /^\s+$|^,\s*$|^-$/.test(w) ? w : this.palabra(w, i === 0)).join("");
+  },
+  // Pone en mayúscula los nombres de lugares (sin importar tildes)
+  lugares(s, extra = []){
+    const base = typeof UBICACIONES !== "undefined" ? Object.values(UBICACIONES).flat().concat(ZONAS) : [];
+    const nombres = [...new Set([...extra.filter(Boolean).flatMap(x => [x, ...String(x).split(/\s+/).filter(w => w.length > 3)]), ...base])]
+      .map(x => this.nombre(String(x)).normalize("NFC")).sort((a, b) => b.length - a.length);
+    let out = String(s).normalize("NFC");
+    for (const l of nombres) {
+      const norm = this.sinTildes(out);
+      const re = new RegExp(`(^|[^a-z0-9])(${this.reEsc(this.sinTildes(l))})(?=$|[^a-z0-9])`, "g");
+      let m;
+      while ((m = re.exec(norm))) { const i = m.index + m[1].length; out = out.slice(0, i) + l + out.slice(i + m[2].length); }
+    }
+    return out;
+  },
+  // Tipo oración: "VENTA CASA 6 AMBIENTES EN SAN CARLOS COUNTRY" → "Venta casa 6 ambientes en San Carlos Country"
+  oracion(s, extra = []){
+    if (!s) return s;
+    let t = String(s).trim().toLowerCase();
+    t = this.lugares(t, extra);
+    t = t.replace(/\b(country|club)\b/g, m => m[0].toUpperCase() + m.slice(1));
+    t = t.replace(/[\p{L}\p{N}]+/gu, w => this.SIGLAS.has(w.toUpperCase()) ? w.toUpperCase() : w);
+    t = t.replace(/(^|[.!?]\s+)(\p{L})/gu, (m, a, c) => a + c.toUpperCase());
+    return t;
+  },
+  // Títulos escritos Con Mayúscula En Cada Palabra (o todo en mayúsculas)
+  titulo(s, extra = []){
+    if (!s) return s;
+    const pal = String(s).match(/\p{L}{3,}/gu) || [];
+    const capit = pal.filter(w => w[0] === w[0].toUpperCase()).length;
+    if (!this.esMayus(s) && capit / Math.max(1, pal.length) <= .6) return String(s).charAt(0).toUpperCase() + String(s).slice(1);
+    return this.oracion(s, extra);
+  },
+  descripcion(s, extra = []){
+    if (!s) return s;
+    return String(s).split("\n").map(l => this.esMayus(l) ? this.oracion(l, extra) : l).join("\n");
+  },
+  // Devuelve una copia de la propiedad con todos los textos uniformes
+  prop(p){
+    if (!p) return p;
+    const q = { ...p };
+    for (const k of ["direccion","barrio","ciudad"]) if (q[k]) q[k] = this.nombre(q[k]);
+    const calle = String(q.direccion || "").replace(/\d.*$/, "").replace(/^(av\.?|avenida)\s+/i, "").trim();
+    const extra = [q.barrio, q.ciudad, calle];
+    if (q.titulo) q.titulo = this.titulo(q.titulo, extra);
+    if (q.descripcion) q.descripcion = this.descripcion(q.descripcion, extra);
+    return q;
+  },
+};

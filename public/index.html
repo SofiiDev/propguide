@@ -1800,6 +1800,7 @@ renderHero(); renderChips(); skeleton(); renderLegal();
 (async () => {
   try {
     [TODAS_P, CFG] = await Promise.all([Store.publicas(), Config.get()]);
+    TODAS_P = TODAS_P.map(p => Texto.prop(p));          // textos uniformes (mayúsculas, direcciones…)
     PROPIEDADES = TODAS_P.filter(p => opDe(p) === OP);
     if (ALQ) $('#fs-precio-t').textContent = "Precio por mes";
     renderHero(); renderLegal(); renderChips(); renderList(); renderFavCount(); route();
