@@ -479,7 +479,27 @@
     .card .title{font-size:16px;font-weight:600;color:var(--ink)}
     .card .feats{border-top:1px solid #f0ece5;padding-top:12px;height:58px}
     .card .card-foot{border-top-color:#f0ece5}
-    .list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:28px;padding:20px 24px 64px}
+    /* Compacto: que entren más propiedades en pantallas de notebook */
+    .card .media{aspect-ratio:4/3}
+    .card .body{padding:14px 16px 12px}
+    .card .kind{font-size:13px;letter-spacing:0;text-transform:none;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;height:2.6em;line-height:1.3}
+    .card .addr small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;height:2.7em;line-height:1.35}
+    .card .price{font-size:22px}
+    .card .exp{font-size:13px}
+    .card .feats{font-size:13px;gap:4px 12px;margin-top:10px;padding-top:10px;height:52px}
+    .card .feats svg{width:15px;height:15px}
+    .card .addr{margin-top:8px;font-size:14.5px}
+    .card .addr small{font-size:12.5px}
+    .card .title{font-size:15px;margin-top:6px}
+    .card .snippet{display:none}
+    .card .card-foot{margin-top:auto;padding-top:10px}
+    .hero{padding:32px 24px 22px}
+    .hero .hero-dt{font-size:38px}
+    .hero .hero-ds{font-size:16px;margin-top:8px}
+    .hero-agent{padding:16px}
+    .ha-av{width:60px;height:60px}
+    .hero-agent .btn{margin-top:10px;min-height:44px}
+    .list{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;padding:18px 24px 64px}
     .count{padding-left:24px}
     .list > .helper,.list > .empty,.list > .no-res{grid-column:1/-1}
     .legal-foot{max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px}
@@ -513,7 +533,9 @@
     #detail .helper,#detail .legal{margin-left:0;margin-right:0}
     .cond{grid-template-columns:repeat(4,1fr)}
     .toast{bottom:32px}
-  }
+  }  /* Pantallas anchas: 4 columnas */
+  @media (min-width:1200px){ .list{grid-template-columns:repeat(4,minmax(0,1fr))} }
+
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -763,9 +785,9 @@
 
 <!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/config.js?v=20261125d"></script>
-<script src="/data.js?v=20261125d"></script>
-<script src="/store.js?v=20261125d"></script>
+<script src="/config.js?v=20261125e"></script>
+<script src="/data.js?v=20261125e"></script>
+<script src="/store.js?v=20261125e"></script>
 <script>
 /* =========================================================
    CONFIGURACIÓN
