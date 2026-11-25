@@ -149,5 +149,6 @@ Cualquier servidor estático sirve, por ejemplo: `npx serve public` y abrí `htt
 
 - **Fotos:** se achican en el navegador (1600 px, JPG) antes de subirse, así cargan rápido en celulares.
 - **Favoritos y comparador:** se guardan en el celular de cada visitante; no requieren cuenta.
-- **Vista previa al compartir:** WhatsApp y Facebook muestran el título general de la galería. Para que muestren
-  la foto y el precio de cada propiedad hace falta una Netlify Edge Function (mejora futura).
+- **Vista previa al compartir:** `netlify/edge-functions/vista-previa.js` agrega la foto, el tipo, el barrio y el precio
+  de cada propiedad cuando se comparte su link (`?p=CÓDIGO`). WhatsApp guarda la vista previa de cada link, así que un link
+  compartido antes del cambio puede seguir mostrando la versión vieja.
