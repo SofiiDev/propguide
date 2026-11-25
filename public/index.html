@@ -105,7 +105,17 @@
 
   /* ---------- Tarjetas ---------- */
   .list{display:grid;gap:18px;padding:12px 16px calc(40px + var(--safe-b))}
-  .card{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s}
+  .card{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s;display:flex;flex-direction:column}
+  /* Misma altura en todas las tarjetas: cada parte tiene un espacio fijo de renglones */
+  .card .body{flex:1;display:flex;flex-direction:column}
+  .card .kind{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .exp{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .feats{height:46px;overflow:hidden;align-content:flex-start}
+  .card .addr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .addr small{overflow:hidden;text-overflow:ellipsis}
+  .card .title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:2.7em}
+  .card .snippet{height:2.9em}
+  .card .card-foot{margin-top:auto}
   .card:active{transform:scale(.99)}
   /* Velo gris para Reservada / Vendida */
   .st-reservada .slides img,.st-vendida .slides img{filter:grayscale(1) brightness(.92) contrast(.9)}
@@ -404,6 +414,40 @@
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .empty{text-align:center;padding:40px 16px;color:var(--muted)}
   :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+  /* ================= DESKTOP (≥ 960 px) ================= */
+  @media (min-width:960px){
+    .wrap{max-width:1200px}
+    .hero-hd{aspect-ratio:auto;height:280px;max-height:none}
+    /* Tipos a la izquierda y filtros / favoritos / orden a la derecha, en una sola fila */
+    .filters{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;padding:4px 8px}
+    .chips.tipo{flex:1 1 auto;padding:10px 16px}
+    .chips.tipo .chip{flex:none;padding:0 18px}
+    .toolbar{flex:0 0 520px;padding:10px 16px}
+    .active-f{flex-basis:100%}
+    .list{grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:24px;padding:16px 24px 56px}
+    .list > .helper,.list > .empty,.list > .no-res{grid-column:1/-1}
+    .card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.12)}
+    .legal-foot{max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px}
+
+    /* Ficha: fotos y detalle a la izquierda, panel con precio y contacto a la derecha */
+    body.is-detail #detail{display:grid;grid-template-columns:minmax(0,1fr) 380px;column-gap:32px;align-items:start;padding:76px 24px 56px}
+    #detail > *{grid-column:1}
+    #detail > .d-side{grid-column:2;grid-row:1 / span 60;position:sticky;top:76px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:6px 0 18px}
+    .topbar{background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:10px 24px}
+    .topbar .wrap{max-width:1200px;margin:0 auto}
+    .gallery{aspect-ratio:16/10;border-radius:18px;overflow:hidden}
+    .gallery .badges{top:16px !important}
+    .d-side .d-head{padding:16px 20px 8px}
+    .d-side .cta{position:static;box-shadow:none;border:0;background:none;padding:8px 20px 0}
+    .d-side .cta .wrap{flex-direction:column;gap:10px}
+    .d-side .cta .btn{flex:none;width:100%}
+    .ficha{grid-template-columns:repeat(4,minmax(0,1fr));margin:20px 0 16px}
+    #detail .section{padding-left:0;padding-right:0}
+    #detail .helper,#detail .legal{margin-left:0;margin-right:0}
+    .cond{grid-template-columns:repeat(4,1fr)}
+    .toast{bottom:32px}
+  }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -650,9 +694,9 @@
 
 <!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/config.js?v=20261119e"></script>
-<script src="/data.js?v=20261119e"></script>
-<script src="/store.js?v=20261119e"></script>
+<script src="/config.js?v=20261125a"></script>
+<script src="/data.js?v=20261125a"></script>
+<script src="/store.js?v=20261125a"></script>
 <script>
 /* =========================================================
    CONFIGURACIÓN
@@ -1080,7 +1124,7 @@ function card(p){
       <div class="price">${precioTxt(p)}</div>
       ${isPozo(p) && p.pozo
         ? `<div class="exp">Entrega ${p.pozo.entrega} · ${p.pozo.avance}% de avance de obra</div>`
-        : p.expensas?`<div class="exp">+ $ ${fmt(p.expensas)} expensas</div>`:""}
+        : p.expensas?`<div class="exp">+ $ ${fmt(p.expensas)} expensas</div>`:`<div class="exp" aria-hidden="true">&nbsp;</div>`}
       <div class="feats">${feats(p)}</div>
       <div class="addr">${p.direccion || p.barrio}<small>${p.barrio}, ${p.ciudad} · Cód. ${p.codigo}</small></div>
       <div class="title">${p.titulo}</div>
@@ -1153,6 +1197,9 @@ new IntersectionObserver(([en])=>$('#filters').classList.toggle('stuck', en.inte
    DETALLE
    ========================================================= */
 let actual = null, franja = "";
+// Pantallas grandes: ficha en dos columnas. Si cambia el tamaño con una ficha abierta, se redibuja.
+const DESK = matchMedia('(min-width:960px)');
+DESK.addEventListener?.('change', () => { if (actual && document.body.classList.contains('is-detail')) renderDetail(actual); });
 
 function renderDetail(p){
   actual = p;
@@ -1184,6 +1231,7 @@ function renderDetail(p){
       </div>
     </div>
 
+    <div class="d-side">
     <header class="d-head">
       <div class="kind" style="font-size:17px">${kind(p)}</div>
       <div class="price">${precioTxt(p)}</div>
@@ -1206,6 +1254,7 @@ function renderDetail(p){
       <div class="loc">${ICON.pin}<p>${p.direccion || p.barrio}<small>${p.barrio}, ${p.ciudad}</small></p></div>
       <p class="pub">Cód. ${p.codigo}</p>
     </header>
+    </div>
 
     ${pozo ? `
     <div class="ficha" aria-label="Datos del desarrollo">
@@ -1294,6 +1343,7 @@ function renderDetail(p){
            <a class="btn btn-sec" href="${waLink(p,'consulta')}" target="_blank" rel="noopener">Consultar</a>`}
     </div></div>`;
 
+  if (DESK.matches) $('#detail .d-side').appendChild($('#detail .cta'));
   counterOn($('#detail .slides'), $('#detail .counter'), $('#detail .gallery'));
   const desc = $('#desc'), more = $('#more');
   requestAnimationFrame(()=>{ if (desc.scrollHeight > desc.clientHeight + 2) more.hidden = false; });
