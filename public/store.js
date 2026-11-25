@@ -337,9 +337,23 @@ const Texto = {
     if (!this.esMayus(s) && capit / Math.max(1, pal.length) <= .6) return String(s).charAt(0).toUpperCase() + String(s).slice(1);
     return this.oracion(s, extra);
   },
+  // Renglones con datos de contacto de otros o la firma de la inmobiliaria (se quitan de las descripciones)
+  CONTACTO: [
+    /^[¡!]?\s*ll[aá]m[ae]nos\b/i,                                   // ¡Llámenos para conocer más…!
+    /^(tel|tel[eé]fono|tel[eé]f|cel|celular|m[oó]vil|whats\s*app|wsp|e-?mail|mail|correo)\s*[:.]/i,
+    /[\w.+-]+@[\w-]+\.[\w.]+/,                                       // cualquier email
+    /^[\s+()\d.-]{8,}$/,                                             // un número de teléfono suelto
+    /^nexia\s*[–—-]\s*team\s+in?m+ob/i,                              // Nexia – Team Inmobiliario (y con errores)
+    /teamnexia\.com/i,                                               // www.teamnexia.com
+    /^\**\s*nexia\s*\|\s*deseo/i,                                    // **NEXIA | Deseo + Necesidad + Posibilidad.**
+  ],
+  sinContacto(s){
+    const out = String(s).split("\n").filter(l => !this.CONTACTO.some(re => re.test(l.trim())));
+    return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  },
   descripcion(s, extra = []){
     if (!s) return s;
-    return String(s).split("\n").map(l => this.esMayus(l) ? this.oracion(l, extra) : l).join("\n");
+    return this.sinContacto(s).split("\n").map(l => this.esMayus(l) ? this.oracion(l, extra) : l).join("\n");
   },
   // Devuelve una copia de la propiedad con todos los textos uniformes
   prop(p){
