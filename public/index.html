@@ -33,6 +33,7 @@
   /* Header opcional (se sube en el panel): imagen ancha de lado a lado, la foto se monta encima */
   .hero.con-hd{padding-top:0}
   .hero-hd{margin:0 -16px;aspect-ratio:3/1;max-height:360px;background:var(--line)}
+  .hero-hd picture{display:block;width:100%;height:100%}
   .hero-hd img{width:100%;height:100%;object-fit:cover;display:block}
   .hero.con-hd .avatar{position:relative;margin-top:-40px}
   .avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 10px;background:var(--brand);color:#fff;display:grid;place-items:center;font:700 26px Hind,sans-serif;box-shadow:0 0 0 4px var(--surface),0 0 0 5px var(--line)}
@@ -418,7 +419,16 @@
   /* ================= DESKTOP (≥ 960 px) ================= */
   @media (min-width:960px){
     .wrap{max-width:1200px}
-    .hero-hd{aspect-ratio:auto;height:280px;max-height:none}
+    /* Encabezado tipo perfil: header bajo, foto grande a la izquierda, nombre al lado y selector a la derecha */
+    .hero{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"hd hd hd" "av t sw" "av s sw";
+      column-gap:24px;align-items:center;text-align:left;padding:24px 24px 18px}
+    .hero.con-hd{padding-top:0}
+    .hero-hd{grid-area:hd;aspect-ratio:auto;height:200px;max-height:none;margin:0 -24px 0;border-radius:0 0 20px 20px;overflow:hidden}
+    .hero .avatar{grid-area:av;width:136px;height:136px;margin:0;font-size:44px;align-self:start}
+    .hero.con-hd .avatar{margin-top:-56px}
+    .hero h1{grid-area:t;align-self:end;margin-top:14px;font-size:32px}
+    .hero > p{grid-area:s;align-self:start;margin-top:2px;font-size:16px}
+    .hero .op-sw{grid-area:sw;margin-top:0}
     /* Tipos a la izquierda y filtros / favoritos / orden a la derecha, en una sola fila */
     .filters{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;padding:4px 8px}
     .chips.tipo{flex:1 1 auto;padding:10px 16px}
@@ -694,9 +704,9 @@
 
 <!-- Supabase (versión fija) + tu conexión + datos de ejemplo para el modo demo -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="/config.js?v=20261125a"></script>
-<script src="/data.js?v=20261125a"></script>
-<script src="/store.js?v=20261125a"></script>
+<script src="/config.js?v=20261125b"></script>
+<script src="/data.js?v=20261125b"></script>
+<script src="/store.js?v=20261125b"></script>
 <script>
 /* =========================================================
    CONFIGURACIÓN
@@ -722,7 +732,7 @@ function renderLegal(){ $('#legal-foot').innerHTML = legalHTML(); }
 function renderHero(){
   const hd = Config.headerDe(CFG);
   $('#hero').classList.toggle("con-hd", !!hd);
-  $('#hero').innerHTML = `${hd ? `<div class="hero-hd"><img src="${hd}" alt=""></div>` : ""}${avatar()}<h1>${tituloOp()}</h1>${subtituloOp() ? `<p>${subtituloOp()}</p>` : ""}
+  $('#hero').innerHTML = `${hd ? `<div class="hero-hd"><picture>${hd === Config.HEADER_NEXIA ? `<source media="(min-width:960px)" srcset="/header-nexia-ancho.jpg">` : ""}<img src="${hd}" alt=""></picture></div>` : ""}${avatar()}<h1>${tituloOp()}</h1>${subtituloOp() ? `<p>${subtituloOp()}</p>` : ""}
     <nav class="op-sw" aria-label="Venta o alquiler"><a href="/"${ALQ ? "" : ' aria-current="page"'}>En venta</a><a href="/alquiler"${ALQ ? ' aria-current="page"' : ""}>En alquiler</a></nav>`;
 }
 
