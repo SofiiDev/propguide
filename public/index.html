@@ -1167,7 +1167,7 @@ function openCompare(){
     ["Ambientes",         p=>isPozo(p) && p.ambMax > p.ambientes ? `${p.ambientes} a ${p.ambMax}` : p.ambientes === 1 ? "Mono" : p.ambientes,                                   p=>p.ambMax||p.ambientes, "max"],
     ["Dormitorios",       p=>dorm(p) > 0 ? (isPozo(p) ? `Hasta ${dorm(p)}` : dorm(p)) : "–", p=>dorm(p), "max"],
     ["Baños",             p=>p.banos || "–",                                p=>p.banos||0, "max"],
-    ["Cochera",           p=>p.cochera ? (isPozo(p) ? "Opcional" : "Sí") : "No"],
+    ["Cochera",           p=>p.cochera ? (isPozo(p) ? "Opcional" : "Sí") : "–"],
     ["Antigüedad",        p=>isPozo(p) ? "En pozo" : p.antiguedad ? `${p.antiguedad} años` : "A estrenar"],
     ["Entrega",           p=>isPozo(p) ? (p.pozo?.entrega || "A confirmar") : "Inmediata"],
     ["Disposición",       p=>p.disposicion || "–"],
@@ -1379,7 +1379,7 @@ function renderDetail(p){
       ${fila("obra", pozo.avance+"%", "Avance de obra")}
       ${fila("amb", ambTexto(p), "Tipologías")}
       ${fila("m2", m2Rango(p), "Superficies")}
-      ${fila("car", p.cochera?"Opcionales":"No", "Cocheras")}
+      ${p.cochera ? fila("car", "Opcionales", "Cocheras") : ""}
       ${fila("fin", pozo.financiacion?"Sí":"Consultar", "Financiación")}
     </div>
 
@@ -1408,7 +1408,7 @@ function renderDetail(p){
       ${fila("amb", p.ambientes, p.ambientes===1?"Ambiente":"Ambientes")}
       ${fila("bed", p.dormitorios||"–", "Dormitorios")}
       ${fila("bath", p.banos, p.banos>1?"Baños":"Baño")}
-      ${fila("car", p.cochera?"Sí":"No", "Cochera")}
+      ${p.cochera ? fila("car", "Sí", "Cochera") : ""}
       ${fila("age", p.antiguedad?p.antiguedad+" años":"A estrenar", "Antigüedad")}
       ${fila("dir", p.disposicion||"–", "Disposición")}
     </div>`}
@@ -1722,7 +1722,7 @@ function datosFicha(p){
   return [
     p.m2 && ["Sup. total", `${p.m2} m²`], p.m2cub && ["Sup. cubierta", `${p.m2cub} m²`],
     p.ambientes && ["Ambientes", p.ambientes], p.dormitorios && ["Dormitorios", p.dormitorios],
-    p.banos && ["Baños", p.banos], ["Cochera", p.cochera ? (p.cochera > 1 ? p.cochera : "Sí") : "No"],
+    p.banos && ["Baños", p.banos], p.cochera && ["Cochera", p.cochera > 1 ? p.cochera : "Sí"],
   ].filter(Boolean).slice(0, 6);
 }
 /* Logo de Nexia pasado a blanco (lo negro queda blanco, lo blanco transparente) y recortado */
